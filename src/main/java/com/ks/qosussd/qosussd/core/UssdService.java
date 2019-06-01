@@ -2,6 +2,8 @@ package com.ks.qosussd.qosussd.core;
 
 
 import com.ks.qosussd.qosussd.config.ConfigProperties;
+import com.ks.qosussd.qosussd.soapdto.UssdRequest;
+import com.ks.qosussd.qosussd.soapdto.UssdResponse;
 import hms.kite.samples.api.TapException;
 import hms.kite.samples.api.ussd.UssdRequestSender;
 import hms.kite.samples.api.ussd.messages.MoUssdReq;
@@ -23,13 +25,13 @@ public class UssdService {
 
     // Service messages
     private static final String SERVICE_EXIT_CODE = "000";
-    private static final String SERVICE_PREV_CODE = "999";
+    private static final String SERVICE_PREV_CODE = "0";
     private static final String SERVICE_INIT_CODE = "#123#";
     private static final String SERVICE_ELECTRONICS_CODE = "1";
     private static final String SERVICE_COSMETICS_CODE = "2";
     private static final String SERVICE_HOUSEHOLDS_CODE = "3";
     private static final String REQUEST_SEND_URL = "http://localhost:7000/ussd/send";
-    private static final String OPERATION_MT_CONT = "mt-cont";
+    private static final String OPERATION_MT_CONT = "FC";
     private static final String OPERATION_MT_FIN = "mt-fin";
 
     ConfigProperties propertyReader = new ConfigProperties();
@@ -39,7 +41,7 @@ public class UssdService {
 
     @RequestMapping("/qosussd")
     @ResponseBody
-    public void onReceivedUssd(@RequestBody MoUssdReq moUssdReq) {
+    public void onReceivedUssd(@RequestBody UssdRequest moUssdReq) {
         try {
             try {
                 processRequest(moUssdReq);
@@ -52,57 +54,77 @@ public class UssdService {
     }
 
     // Process all kinds of requests to customer
-    private void processRequest(MoUssdReq moUssdReq) throws MalformedURLException, TapException {
-        MtUssdReq mtUssdReq;
-        String destinationAddress = moUssdReq.getSourceAddress();
+    private void processRequest(UssdRequest moUssdReq) throws MalformedURLException, TapException {
+        UssdResponse mtUssdReq;
+        String destinationAddress = moUssdReq.getMsisdn();
         if (menuStates.size() > 0) {
-            switch (moUssdReq.getMessage()) {
-                case SERVICE_INIT_CODE:
-                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("welcome.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+            switch (moUssdReq.getSubscriberInput()) {
+                case "1":
+                    mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("welcome.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
                     menuStates.add("welcome.page");
                     break;
                 case SERVICE_EXIT_CODE:
                     mtUssdReq = generateMTRequest(propertyReader.getConfigValue("exit.page"), moUssdReq.getSessionId(), OPERATION_MT_FIN, destinationAddress);
                     menuStates.clear();
                     break;
-                case SERVICE_ELECTRONICS_CODE:
-                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("electronics.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
-                    menuStates.add("electronics.page");
-                    break;
-                case SERVICE_COSMETICS_CODE:
-                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("cosmetics.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
-                    menuStates.add("cosmetics.page");
-                    break;
-                case SERVICE_HOUSEHOLDS_CODE:
-                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("households.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
-                    menuStates.add("households.page");
-                    break;
+//                case SERVICE_ELECTRONICS_CODE:
+//                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("electronics.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+//                    menuStates.add("electronics.page");
+//                    break;
+//                case SERVICE_COSMETICS_CODE:
+//                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("cosmetics.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+//                    menuStates.add("cosmetics.page");
+//                    break;
+//                case SERVICE_HOUSEHOLDS_CODE:
+//                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("households.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+//                    menuStates.add("households.page");
+//                    break;
                 case SERVICE_PREV_CODE:
-                    mtUssdReq = generateMTRequest(backOperation(), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+                    mtUssdReq = padmeHomeLevel(backOperation(), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
                     break;
                 default:
-                    mtUssdReq = generateMTRequest(propertyReader.getConfigValue("error.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+                    mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("error.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
                     menuStates.add("error.page");
             }
+        } else if (menuStates.size() == 1) {
+           mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("page.level1"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+            menuStates.add("page.level1");
+
         } else {
             mtUssdReq = generateMTRequest(propertyReader.getConfigValue("error.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
             menuStates.add("error.page");
         }
 
-        UssdRequestSender ussdRequestSender = new UssdRequestSender(new URL(REQUEST_SEND_URL));
-        ussdRequestSender.sendUssdRequest(mtUssdReq);
+//        UssdRequestSender ussdRequestSender = new UssdRequestSender(new URL(REQUEST_SEND_URL));
+//        ussdRequestSender.sendUssdRequest(mtUssdReq);
         System.out.println(menuStates);
+        return;
     }
 
     // Generate request to the customer
-    private MtUssdReq generateMTRequest(String message, String sessionId, String operation, String destinationAddress) {
-        MtUssdReq mtUssdReq = new MtUssdReq();
-        mtUssdReq.setApplicationId("APP_000001");
-        mtUssdReq.setPassword("dfc0333b82a8e01f500e7e37188f97eo");
-        mtUssdReq.setMessage(message);
-        mtUssdReq.setSessionId(sessionId);
-        mtUssdReq.setUssdOperation(operation);
-        mtUssdReq.setDestinationAddress(destinationAddress);
+    private UssdResponse generateMTRequest(String message, String sessionId, String operation, String destinationAddress) {
+        UssdResponse mtUssdReq = new UssdResponse();
+//        mtUssdReq.setApplicationId("APP_000001");
+//        mtUssdReq.setPassword("dfc0333b82a8e01f500e7e37188f97eo");
+//        mtUssdReq.setApplicationResponse(message);
+//        mtUssdReq.setSessionId(sessionId);
+//        mtUssdReq.setUssdOperation(operation);
+//        mtUssdReq.setDestinationAddress(destinationAddress);
+        return mtUssdReq;
+    }
+
+    private UssdResponse padmeHomeLevel(String message, String sessionId, String operation, String destinationAddress) {
+        UssdResponse mtUssdReq = new UssdResponse();
+        mtUssdReq.setApplicationResponse(message);
+        mtUssdReq.setMsisdn(destinationAddress);
+        mtUssdReq.setFreeflow("FC");
+        return mtUssdReq;
+    }
+    private UssdResponse padmeLevel1(String message, String sessionId, String operation, String destinationAddress) {
+        UssdResponse mtUssdReq = new UssdResponse();
+        mtUssdReq.setApplicationResponse(message);
+        mtUssdReq.setMsisdn(destinationAddress);
+        mtUssdReq.setFreeflow(operation);
         return mtUssdReq;
     }
 
