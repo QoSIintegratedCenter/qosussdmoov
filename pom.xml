@@ -49,13 +49,13 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <dependency>
+      <!--  <dependency>
             <groupId>hms</groupId>
             <artifactId>sdp.app.api</artifactId>
             <version>1.0.144</version>
             <scope>system</scope>
             <systemPath>${basedir}/libs/tap-app-api.jar</systemPath>
-        </dependency>
+        </dependency>-->
     </dependencies>
 
     <build>
