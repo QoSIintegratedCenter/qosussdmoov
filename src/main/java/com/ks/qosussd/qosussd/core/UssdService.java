@@ -4,17 +4,12 @@ package com.ks.qosussd.qosussd.core;
 import com.ks.qosussd.qosussd.config.ConfigProperties;
 import com.ks.qosussd.qosussd.soapdto.UssdRequest;
 import com.ks.qosussd.qosussd.soapdto.UssdResponse;
-import hms.kite.samples.api.TapException;
-import hms.kite.samples.api.ussd.UssdRequestSender;
-import hms.kite.samples.api.ussd.messages.MoUssdReq;
-import hms.kite.samples.api.ussd.messages.MtUssdReq;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 
 /**
@@ -43,18 +38,14 @@ public class UssdService {
     @ResponseBody
     public void onReceivedUssd(@RequestBody UssdRequest moUssdReq) {
         try {
-            try {
-                processRequest(moUssdReq);
-            } catch (TapException e) {
-                e.printStackTrace();
-            }
+            processRequest(moUssdReq);
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
     }
 
     // Process all kinds of requests to customer
-    private void processRequest(UssdRequest moUssdReq) throws MalformedURLException, TapException {
+    private void processRequest(UssdRequest moUssdReq) throws MalformedURLException {
         UssdResponse mtUssdReq;
         String destinationAddress = moUssdReq.getMsisdn();
         if (menuStates.size() > 0) {
