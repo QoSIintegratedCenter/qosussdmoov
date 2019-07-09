@@ -4,6 +4,7 @@ package com.ks.qosussd.qosussd.core;
 import com.ks.qosussd.qosussd.config.ConfigProperties;
 import com.ks.qosussd.qosussd.soapdto.UssdRequest;
 import com.ks.qosussd.qosussd.soapdto.UssdResponse;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,7 +18,7 @@ import java.util.ArrayList;
  */
 @Controller
 public class UssdService {
-
+    private static final org.slf4j.Logger log = LoggerFactory.getLogger(UssdService.class);
     // Service messages
     private static final String SERVICE_EXIT_CODE = "000";
     private static final String SERVICE_PREV_CODE = "0";
@@ -46,15 +47,19 @@ public class UssdService {
 
     // Process all kinds of requests to customer
     private void processRequest(UssdRequest moUssdReq) throws MalformedURLException {
+        log.info("come : {} ", moUssdReq);
         UssdResponse mtUssdReq;
         String destinationAddress = moUssdReq.getMsisdn();
         if (menuStates.size() > 0) {
             switch (moUssdReq.getSubscriberInput()) {
                 case "1":
+                    log.info("select 1 : {} ", menuStates);
                     mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("welcome.page"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
                     menuStates.add("welcome.page");
+
                     break;
                 case SERVICE_EXIT_CODE:
+                    log.info("select exit : {} ", menuStates);
                     mtUssdReq = generateMTRequest(propertyReader.getConfigValue("exit.page"), moUssdReq.getSessionId(), OPERATION_MT_FIN, destinationAddress);
                     menuStates.clear();
                     break;
@@ -78,6 +83,7 @@ public class UssdService {
                     menuStates.add("error.page");
             }
         } else if (menuStates.size() == 1) {
+            log.info("select 1 : leve1 {} ", menuStates);
            mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("page.level1"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
             menuStates.add("page.level1");
 
