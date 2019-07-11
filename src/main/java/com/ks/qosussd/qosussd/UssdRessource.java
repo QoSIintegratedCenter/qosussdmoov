@@ -1,8 +1,8 @@
 package com.ks.qosussd.qosussd;
 
 import com.ks.qosussd.qosussd.core.Option;
+import com.ks.qosussd.qosussd.core.OptionsType;
 import com.ks.qosussd.qosussd.core.Response;
-
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,10 +24,17 @@ public class UssdRessource {
 
         Option option = new Option();
         option.setChoice(1);
-//        option.setValue("Momo ");
+        option.setValue("Momo ");
+        Option option1 = new Option();
+        option1.setChoice(2);
+        option1.setValue("Moov ");
         List<Option> optionList = new ArrayList<>();
         optionList.add(option);
-        response.setOptions(optionList);
+        optionList.add(option1);
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option);
+        optionsType.getOption().add(option1);
+        response.setOptions(optionsType);
         return response;
     }
 }

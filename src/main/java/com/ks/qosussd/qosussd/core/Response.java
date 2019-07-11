@@ -1,29 +1,30 @@
 package com.ks.qosussd.qosussd.core;
 
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import lombok.Data;
 
-
 import java.io.Serializable;
-import java.util.List;
 
-@JacksonXmlRootElement
+@JacksonXmlRootElement(localName = "response")
 @Data
+@JsonPropertyOrder({"screenType", "text", "options", "backLink", "sessionOp", "screenId"})
 public class Response implements Serializable {
     @JacksonXmlProperty(localName = "screen_type")
     private String screenType;
-    @JacksonXmlProperty
+    @JacksonXmlProperty(localName = "text")
     private String text;
-    @JacksonXmlProperty
+    @JacksonXmlProperty(localName = "session_op")
     private String sessionOp;
-    @JacksonXmlProperty
+    @JacksonXmlProperty(localName = "screen_id")
     private int screenId;
     @JacksonXmlProperty
-    private List<Option> options;
-    @JacksonXmlProperty
+//    @JacksonXmlElementWrapper(useWrapping = false)
+    private OptionsType options;
+    @JacksonXmlProperty(localName = "back_link")
     private int backLink;
-    @JacksonXmlProperty
+    @JacksonXmlProperty(localName = "home_link")
     private int homeLink;
 
 }
