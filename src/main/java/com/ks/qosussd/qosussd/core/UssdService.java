@@ -5,7 +5,9 @@ import com.ks.qosussd.qosussd.config.ConfigProperties;
 import com.ks.qosussd.qosussd.soapdto.UssdRequest;
 import com.ks.qosussd.qosussd.soapdto.UssdResponse;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -84,7 +86,7 @@ public class UssdService {
             }
         } else if (menuStates.size() == 1) {
             log.info("select 1 : leve1 {} ", menuStates);
-           mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("page.level1"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
+            mtUssdReq = padmeHomeLevel(propertyReader.getConfigValue("page.level1"), moUssdReq.getSessionId(), OPERATION_MT_CONT, destinationAddress);
             menuStates.add("page.level1");
 
         } else {
@@ -117,6 +119,7 @@ public class UssdService {
         mtUssdReq.setFreeflow("FC");
         return mtUssdReq;
     }
+
     private UssdResponse padmeLevel1(String message, String sessionId, String operation, String destinationAddress) {
         UssdResponse mtUssdReq = new UssdResponse();
         mtUssdReq.setApplicationResponse(message);
@@ -141,4 +144,6 @@ public class UssdService {
     String home() {
         return "Hello World!";
     }
+
+
 }
