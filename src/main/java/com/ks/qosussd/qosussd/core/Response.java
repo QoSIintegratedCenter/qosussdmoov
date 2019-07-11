@@ -4,12 +4,14 @@ import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import lombok.Data;
+import lombok.ToString;
 
 import java.io.Serializable;
 
 @JacksonXmlRootElement(localName = "response")
 @Data
 @JsonPropertyOrder({"screenType", "text", "options", "backLink", "sessionOp", "screenId"})
+@ToString
 public class Response implements Serializable {
     @JacksonXmlProperty(localName = "screen_type")
     private String screenType;
