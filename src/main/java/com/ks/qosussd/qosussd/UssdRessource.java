@@ -42,7 +42,7 @@ public class UssdRessource {
     }
 
     @GetMapping("padmeussd")
-    public Response startMoovUssd(@RequestParam String sc, @RequestParam(required = true) String msisdn, @RequestParam String user_input, String lang, @RequestParam String session_id, @RequestParam int req_no, @RequestParam String screen_id) {
+    public Response startMoovUssd(@RequestParam String sc, @RequestParam(required = true) String msisdn, @RequestParam(required = false) String user_input, @RequestParam(required = false) String lang, @RequestParam String session_id, @RequestParam(required = false) int req_no, @RequestParam(required = false) String screen_id) {
         Response response = new Response();
         if (user_input.isEmpty()) {
             log.info("start USSD");
@@ -51,6 +51,7 @@ public class UssdRessource {
             response.setHomeLink(0);
             response.setScreenId(1);
             response.setScreenType("menu");
+            response.setSessionOp("continue");
 
             Option option = new Option();
             option.setChoice(1);
@@ -62,24 +63,25 @@ public class UssdRessource {
             log.info("Response : {}", response);
             return response;
         } else if (Integer.parseInt(user_input) == 1) {
-            log.info("start USSD");
+            log.info("Choix 1 USSD");
             response.setText("PADME \n Sélectionner un numéro puis appuyer sur envoyer");
             response.setBackLink(1);
             response.setHomeLink(0);
             response.setScreenId(1);
             response.setScreenType("menu");
+            response.setSessionOp("continue");
             Option option = new Option();
             option.setChoice(2);
             option.setValue("Dépôt");
             Option option3 = new Option();
-            option.setChoice(3);
-            option.setValue("Rétrait");
+            option3.setChoice(3);
+            option3.setValue("Rétrait");
             Option option4 = new Option();
-            option.setChoice(4);
-            option.setValue("Transfert");
+            option4.setChoice(4);
+            option4.setValue("Transfert");
             Option option5 = new Option();
-            option.setChoice(5);
-            option.setValue("Gestion des comptes");
+            option5.setChoice(5);
+            option5.setValue("Gestion des comptes");
             OptionsType optionsType = new OptionsType();
             optionsType.getOption().add(option);
             optionsType.getOption().add(option3);
@@ -90,9 +92,18 @@ public class UssdRessource {
             log.info("Response : {}", response);
             return response;
 
+        } else {
+            log.info("Choix autre USSD");
+            response.setText("PADME \n vous avez choisir :" + user_input);
+            response.setBackLink(1);
+            response.setHomeLink(0);
+            response.setScreenId(1);
+            response.setScreenType("form");
+            response.setSessionOp("end");
+            log.info("Response : {}", response);
+            return response;
         }
 
-        return response;
     }
 
 

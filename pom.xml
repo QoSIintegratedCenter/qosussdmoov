@@ -67,7 +67,7 @@
     </dependencies>
 
     <build>
-        <finalName>padmeussd</finalName>
+        <finalName>qosussd</finalName>
         <plugins>
 
             <plugin>
