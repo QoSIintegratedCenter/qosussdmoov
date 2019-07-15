@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 @JsonPropertyOrder({"screenType", "text", "options", "backLink", "sessionOp", "screenId"})
 @ToString
-public class Response implements Serializable {
+public class MoovUssdResponse implements Serializable {
     @JacksonXmlProperty(localName = "screen_type")
     private String screenType;
     @JacksonXmlProperty(localName = "text")

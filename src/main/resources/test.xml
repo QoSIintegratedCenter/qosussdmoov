@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<response>
+<moovUssdResponse>
     <screen_type>menu</screen_type>
     <text>Please choose</text>
     <options>
@@ -12,4 +12,4 @@
     <home_link>0</home_link>
     <session_op>continue</session_op>
     <screen_id>15</screen_id>
-</response>
+</moovUssdResponse>
