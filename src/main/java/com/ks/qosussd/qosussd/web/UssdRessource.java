@@ -3,6 +3,7 @@ package com.ks.qosussd.qosussd.web;
 import com.ks.qosussd.qosussd.core.MoovUssdResponse;
 import com.ks.qosussd.qosussd.core.Option;
 import com.ks.qosussd.qosussd.core.OptionsType;
+import com.ks.qosussd.qosussd.core.SubscriberInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -11,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.ks.qosussd.qosussd.web.ProcessUssd.activeSessions;
 
 @RestController
 @Slf4j
@@ -45,52 +48,28 @@ public class UssdRessource {
 
     @GetMapping("padmeussd")
     public MoovUssdResponse startMoovUssd(@RequestParam String sc, @RequestParam(required = true) String msisdn, @RequestParam(required = false) String user_input, @RequestParam(required = false) String lang, @RequestParam String session_id, @RequestParam(required = false) int req_no, @RequestParam(required = false) String screen_id) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        MoovUssdResponse moovUssdResponse = null;
+        SubscriberInfo sub = null;
         if (user_input.isEmpty()) {
+            sub = new SubscriberInfo();
+            sub.setMsisdn(msisdn);
+            sub.setSc(sc);
+            sub.setLang(lang);
+            sub.setReq_no(req_no);
+            sub.setUserInput(user_input);
+            sub.setSessionId(session_id);
+            sub.setScreenId(screen_id);
+            sub.setMenuLevel(0);
+            activeSessions.put(msisdn, sub);
             log.info("start USSD");
-            moovUssdResponse.setText("Sélectionner un numéro puis appuyer sur envoyer");
-            moovUssdResponse.setBackLink(1);
-            moovUssdResponse.setHomeLink(0);
-            moovUssdResponse.setScreenId(1);
-            moovUssdResponse.setScreenType("menu");
-            moovUssdResponse.setSessionOp("continue");
-
-            Option option = new Option();
-            option.setChoice(1);
-            option.setValue("PADME ");
-            OptionsType optionsType = new OptionsType();
-            optionsType.getOption().add(option);
-//            optionsType.getOption().add(option1);
-            moovUssdResponse.setOptions(optionsType);
+            moovUssdResponse = processUssd.welcomLevel(sub);
             log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
         } else if (Integer.parseInt(user_input) == 1) {
             log.info("Choix 1 USSD");
-            moovUssdResponse.setText("PADME \n Sélectionner un numéro puis appuyer sur envoyer");
-            moovUssdResponse.setBackLink(1);
-            moovUssdResponse.setHomeLink(0);
-            moovUssdResponse.setScreenId(1);
-            moovUssdResponse.setScreenType("menu");
-            moovUssdResponse.setSessionOp("continue");
-            Option option = new Option();
-            option.setChoice(2);
-            option.setValue("Dépôt");
-            Option option3 = new Option();
-            option3.setChoice(3);
-            option3.setValue("Rétrait");
-            Option option4 = new Option();
-            option4.setChoice(4);
-            option4.setValue("Transfert");
-            Option option5 = new Option();
-            option5.setChoice(5);
-            option5.setValue("Gestion des comptes");
-            OptionsType optionsType = new OptionsType();
-            optionsType.getOption().add(option);
-            optionsType.getOption().add(option3);
-            optionsType.getOption().add(option4);
-            optionsType.getOption().add(option5);
-//            optionsType.getOption().add(option1);
-            moovUssdResponse.setOptions(optionsType);
+            log.info("Start sub {} ", activeSessions.get(msisdn));
+            activeSessions.get(msisdn).incrementMenuLevel();
+            moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
             log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
 
