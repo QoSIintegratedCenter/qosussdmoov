@@ -18,7 +18,7 @@ public class MoovUssdResponse implements Serializable {
     @JacksonXmlProperty(localName = "text")
     private String text;
     @JacksonXmlProperty(localName = "session_op")
-    private String sessionOp;
+    private TypeOperation sessionOp;
     @JacksonXmlProperty(localName = "screen_id")
     private int screenId;
     @JacksonXmlProperty
