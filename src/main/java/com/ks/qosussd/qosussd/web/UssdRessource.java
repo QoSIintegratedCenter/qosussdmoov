@@ -1,9 +1,6 @@
 package com.ks.qosussd.qosussd.web;
 
-import com.ks.qosussd.qosussd.core.MoovUssdResponse;
-import com.ks.qosussd.qosussd.core.Option;
-import com.ks.qosussd.qosussd.core.OptionsType;
-import com.ks.qosussd.qosussd.core.SubscriberInfo;
+import com.ks.qosussd.qosussd.core.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -65,25 +62,80 @@ public class UssdRessource {
             moovUssdResponse = processUssd.welcomLevel(sub);
             log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
-        } else if (Integer.parseInt(user_input) == 1) {
-            log.info("Choix 1 USSD");
-            log.info("Start sub {} ", activeSessions.get(msisdn));
-            activeSessions.get(msisdn).incrementMenuLevel();
-            moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
-            log.info("MoovUssdResponse : {}", moovUssdResponse);
-            return moovUssdResponse;
-
         } else {
-            log.info("Choix autre USSD");
-            moovUssdResponse.setText("PADME \n vous avez choisir :" + user_input);
-            moovUssdResponse.setBackLink(1);
-            moovUssdResponse.setHomeLink(0);
-            moovUssdResponse.setScreenId(1);
-            moovUssdResponse.setScreenType("form");
-            moovUssdResponse.setSessionOp("end");
-            log.info("MoovUssdResponse : {}", moovUssdResponse);
-            return moovUssdResponse;
+            sub = activeSessions.get(msisdn);
+            log.info("sub");
+            switch (sub.getMenuLevel()){
+                case 0:
+                    log.info("Choix 1 USSD");
+                    log.info("Start sub {} ", activeSessions.get(msisdn));
+                    sub.incrementMenuLevel();
+                    moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
+                    log.info("MoovUssdResponse : {}", moovUssdResponse);
+                    log.info("sub : {}");
+                    System.out.println(sub);
+                    return moovUssdResponse;
+                case 1:
+                    log.info("choix niveux 1");
+                    if (Integer.parseInt(user_input) == 1) {
+                        log.info("choix depot ");
+                        sub.getSubParams().put("option1", "Depot");
+                        sub.incrementMenuLevel();
+                        return processUssd.moovLevel1Depot(sub);
+                    } else {
+                        return processUssd.moovLevel1Depot(sub);
+                    }
+                    default:
+
+                        log.info("Choix autre USSD");
+                        moovUssdResponse.setText("PADME \n vous avez choisir :" + user_input);
+                        moovUssdResponse.setBackLink(1);
+                        moovUssdResponse.setHomeLink(0);
+                        moovUssdResponse.setScreenId(1);
+                        moovUssdResponse.setScreenType("form");
+                        moovUssdResponse.setSessionOp(TypeOperation.END);
+                        log.info("MoovUssdResponse : {}", moovUssdResponse);
+                        return moovUssdResponse;
+            }
+           /* if (Integer.parseInt(user_input) == 1 && sub.getMenuLevel() == 0) {
+                log.info("Choix 1 USSD");
+                log.info("Start sub {} ", activeSessions.get(msisdn));
+                sub.incrementMenuLevel();
+                moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
+                log.info("MoovUssdResponse : {}", moovUssdResponse);
+                log.info("sub : {}");
+                System.out.println(sub);
+                return moovUssdResponse;
+
+            } else if (Integer.parseInt(user_input) == 1 && sub.getMenuLevel() == 1) {
+                sub = activeSessions.get(msisdn);
+
+                if (sub.getMenuLevel() == 1) {
+                    log.info("choix niveux 1");
+                    if (Integer.parseInt(user_input) == 1) {
+                        log.info("choix depot ");
+                        sub.getSubParams().put("option1", "Depot");
+                        sub.incrementMenuLevel();
+                        return processUssd.moovLevel1Depot(sub);
+                    } else {
+                        return processUssd.moovLevel1Depot(sub);
+                    }
+                } else {
+                    return moovUssdResponse;
+                }
+            } else {
+                log.info("Choix autre USSD");
+                moovUssdResponse.setText("PADME \n vous avez choisir :" + user_input);
+                moovUssdResponse.setBackLink(1);
+                moovUssdResponse.setHomeLink(0);
+                moovUssdResponse.setScreenId(1);
+                moovUssdResponse.setScreenType("form");
+                moovUssdResponse.setSessionOp(TypeOperation.END);
+                log.info("MoovUssdResponse : {}", moovUssdResponse);
+                return moovUssdResponse;
+            }*/
         }
+
 
     }
 

@@ -67,6 +67,36 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
+
+    MoovUssdResponse moovLevel1Depot(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+            moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+            moovUssdResponse.setScreenType("menu");
+            moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+            Option option = new Option();
+            option.setChoice(1);
+            option.setValue("Epargne a vue");
+            Option option3 = new Option();
+            option3.setChoice(2);
+            option3.setValue("Plan tontine");
+            Option option4 = new Option();
+            option4.setChoice(3);
+            option4.setValue("Compte courant");
+            OptionsType optionsType = new OptionsType();
+            optionsType.getOption().add(option);
+            optionsType.getOption().add(option3);
+            optionsType.getOption().add(option4);
+            moovUssdResponse.setOptions(optionsType);
+
+
+
+
+        return moovUssdResponse;
+    }
+
     boolean checkNumberExist(String phoneNumber) {
         boolean existe = true;
         RestTemplate restTemplate = new RestTemplate();
