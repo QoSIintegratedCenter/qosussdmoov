@@ -73,25 +73,23 @@ public class ProcessUssd {
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
-            moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
-            moovUssdResponse.setScreenType("menu");
-            moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
-            Option option = new Option();
-            option.setChoice(1);
-            option.setValue("Epargne a vue");
-            Option option3 = new Option();
-            option3.setChoice(2);
-            option3.setValue("Plan tontine");
-            Option option4 = new Option();
-            option4.setChoice(3);
-            option4.setValue("Compte courant");
-            OptionsType optionsType = new OptionsType();
-            optionsType.getOption().add(option);
-            optionsType.getOption().add(option3);
-            optionsType.getOption().add(option4);
-            moovUssdResponse.setOptions(optionsType);
-
-
+        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+        moovUssdResponse.setScreenType("menu");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        Option option = new Option();
+        option.setChoice(1);
+        option.setValue("Epargne a vue");
+        Option option3 = new Option();
+        option3.setChoice(2);
+        option3.setValue("Plan tontine");
+        Option option4 = new Option();
+        option4.setChoice(3);
+        option4.setValue("Compte courant");
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option);
+        optionsType.getOption().add(option3);
+        optionsType.getOption().add(option4);
+        moovUssdResponse.setOptions(optionsType);
 
 
         return moovUssdResponse;
@@ -103,5 +101,48 @@ public class ProcessUssd {
 
 
         return existe;
+    }
+
+    public MoovUssdResponse moovLevel1DepotEpargne(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Veuillez saisir le montant :");
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        return moovUssdResponse;
+
+    }
+
+    public MoovUssdResponse moovLevel1ResumEpargne(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("Transfert de ")
+                .append(sub.getAmount())
+                .append(" fcfa de votre compte momo sur votre compte ")
+                .append(sub.getSubParams().get("option2"))
+                .append(".\n")
+                .append("Frais : 200 fcfa")
+                .append("\n")
+                .append("Entrer votre pin MM pour continuer :");
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText(stringBuilder.toString());
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse defaultException() {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Mauvais choix, merci de reessayer");
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.END);
+        return moovUssdResponse;
     }
 }
