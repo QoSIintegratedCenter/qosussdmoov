@@ -112,10 +112,12 @@ public class UssdRessource {
                     return processUssd.moovLevel1ResumEpargne(sub);
                 case 4:
                     log.info("processe");
-                    return processUssd.defaultException();
+                    activeSessions.remove(sub.getMsisdn());
+                    return processUssd.endDeposit();
                 default:
 
                     log.info("Choix autre USSD");
+                    moovUssdResponse = new MoovUssdResponse();
                     moovUssdResponse.setText("PADME \n vous avez faire un mauvais chois ");
                     moovUssdResponse.setBackLink(1);
                     moovUssdResponse.setHomeLink(0);
