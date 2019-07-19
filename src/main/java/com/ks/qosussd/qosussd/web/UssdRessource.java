@@ -143,6 +143,8 @@ public class UssdRessource {
                     log.info("processe");
                     if (sub.getSubParams().get("option1") == DEPOT){
                         select = Integer.parseInt(user_input);
+                    }else if(sub.getSubParams().get("option1") == RETRAIT){
+                        processUssd.checkValidUserPadme(user_input, sub);
                     }
                     activeSessions.remove(sub.getMsisdn());
                     return processUssd.endDeposit();

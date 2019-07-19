@@ -141,9 +141,9 @@ public class ProcessUssd {
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
-        if(sub.getSubParams().get("option2") == DEPOT){
+        if (sub.getSubParams().get("option2") == DEPOT) {
             moovUssdResponse.setText(stringBuilder.toString());
-        }else if(sub.getSubParams().get("option2") == RETRAIT){
+        } else if (sub.getSubParams().get("option2") == RETRAIT) {
             moovUssdResponse.setText(stringBuilder2.toString());
         }
 
@@ -205,6 +205,17 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
+    public MoovUssdResponse endOperation(String text) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText(text);
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.END);
+        return moovUssdResponse;
+    }
+
     public MoovUssdResponse moovLevel1Retrait(SubscriberInfo sub) {
 
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -225,5 +236,10 @@ public class ProcessUssd {
         optionsType.getOption().add(option4);
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
+    }
+
+    public boolean checkValidUserPadme(String user_input, SubscriberInfo sub) {
+        boolean isvalid = false;
+        return isvalid;
     }
 }
