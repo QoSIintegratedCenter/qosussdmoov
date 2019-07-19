@@ -11,6 +11,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.ks.qosussd.qosussd.core.Constants.*;
 import static com.ks.qosussd.qosussd.web.ProcessUssd.activeSessions;
 
 @RestController
@@ -18,6 +19,7 @@ import static com.ks.qosussd.qosussd.web.ProcessUssd.activeSessions;
 public class UssdRessource {
 
     ProcessUssd processUssd = new ProcessUssd();
+    int select;
 
     @GetMapping(name = "/test2", produces = MediaType.APPLICATION_XML_VALUE)
     private MoovUssdResponse responseTest() {
@@ -73,33 +75,56 @@ public class UssdRessource {
                     sub.incrementMenuLevel();
                     moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
                     log.info("MoovUssdResponse : {}", moovUssdResponse);
-                    log.info("sub : {}");
+//                    log.info("sub : {}");
                     System.out.println(sub);
                     return moovUssdResponse;
                 case 1:
                     log.info("choix niveux 1");
-                    if (Integer.parseInt(user_input) == 1) {
+                    select = Integer.parseInt(user_input);
+                    if (select == 1) {
                         log.info("choix depot ");
-                        sub.getSubParams().put("option1", "Depot");
+                        sub.getSubParams().put("option1", DEPOT);
                         sub.incrementMenuLevel();
                         return processUssd.moovLevel1Depot(sub);
+                    } else if (select == 2) {
+                        log.info("choix depot ");
+                        sub.getSubParams().put("option1", RETRAIT);
+                        sub.incrementMenuLevel();
+                        return processUssd.moovLevel1Retrait(sub);
                     } else {
                         return processUssd.moovLevel1Depot(sub);
                     }
                 case 2:
                     log.info("choix niveux 2");
+                    select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
-                    if (Integer.parseInt(user_input) == 1) {
+                   /* switch (select){
+                        case 1:
+                            switch (sub.getSubParams().get("option1").toString()){
+                                case DEPOT :
+                            }
+                    }*/
+                    if (select == 1 && sub.getSubParams().get("option1") == DEPOT) {
                         log.info("choix depot plus {} ", sub.getSubParams().get("option1"));
-                        sub.getSubParams().put("option2", "Epargne");
-                        return processUssd.moovLevel1DepotEpargne(sub);
-                    } else if (Integer.parseInt(user_input) == 2) {
-                        sub.getSubParams().put("option2", "Plan tontine");
-                        return processUssd.moovLevel1DepotEpargne(sub);
+                        sub.getSubParams().put("option2", EPARGNE);
+                        return processUssd.moovLevel1DepotCompte(sub);
+                    } else if (select == 2 && sub.getSubParams().get("option1") == DEPOT) {
+                        sub.getSubParams().put("option2", PLAN_TONTINE);
+                        return processUssd.moovLevel1DepotCompte(sub);
 
-                    } else if (Integer.parseInt(user_input) == 3) {
-                        sub.getSubParams().put("option2", "courant");
-                        return processUssd.moovLevel1DepotEpargne(sub);
+                    } else if (select == 3 && sub.getSubParams().get("option1") == DEPOT) {
+                        sub.getSubParams().put("option2", COURANT);
+                        return processUssd.moovLevel1DepotCompte(sub);
+                    }
+                    if (select == 1 && sub.getSubParams().get("option1") == RETRAIT) {
+                        log.info("choix retrait plus {} ", sub.getSubParams().get("option1"));
+                        sub.getSubParams().put("option2", EPARGNE);
+                        return processUssd.moovLevel1DepotCompte(sub);
+                    }
+                    if (select == 2 && sub.getSubParams().get("option1") == RETRAIT) {
+                        log.info("choix retrait plus {} ", sub.getSubParams().get("option1"));
+                        sub.getSubParams().put("option2", COURANT);
+                        return processUssd.moovLevel1DepotCompte(sub);
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.defaultException();
@@ -109,9 +134,16 @@ public class UssdRessource {
                     sub.setAmount(new BigDecimal(user_input));
                     sub.setUserInput(user_input);
                     sub.incrementMenuLevel();
-                    return processUssd.moovLevel1ResumEpargne(sub);
+                    if (sub.getSubParams().get("option1") == RETRAIT) {
+                        return processUssd.moovLevel3Retrait(sub);
+                    } else
+                        return processUssd.moovLevel1ResumEpargne(sub);
+
                 case 4:
                     log.info("processe");
+                    if (sub.getSubParams().get("option1") == DEPOT){
+                        select = Integer.parseInt(user_input);
+                    }
                     activeSessions.remove(sub.getMsisdn());
                     return processUssd.endDeposit();
                 default:
