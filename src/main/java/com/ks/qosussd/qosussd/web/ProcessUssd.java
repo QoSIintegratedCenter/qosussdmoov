@@ -1,11 +1,16 @@
 package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.ks.qosussd.qosussd.core.Utilities.getProp;
+
+@Slf4j
 public class ProcessUssd {
 
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
@@ -69,6 +74,7 @@ public class ProcessUssd {
         } else {
             moovUssdResponse.setText("Ce numero n'a pas un compte chez padme");
             moovUssdResponse.setScreenType("form");
+
             moovUssdResponse.setSessionOp(TypeOperation.END);
         }
 
@@ -107,6 +113,23 @@ public class ProcessUssd {
     boolean checkNumberExist(String phoneNumber) {
         boolean existe = true;
         RestTemplate restTemplate = new RestTemplate();
+
+
+        try {
+            System.out.println(getProp("pamde.check_client") + phoneNumber);
+
+            Map res = restTemplate.getForObject(getProp("pamde.check_client") + phoneNumber, Map.class);
+            System.out.println(res);
+            if (res == null) {
+                existe = false;
+            } else {
+                existe = true;
+                log.info("Response : {}", res);
+            }
+        } catch (Exception e) {
+            log.error("error : {}", e);
+            existe = false;
+        }
 
 
         return existe;
@@ -290,6 +313,11 @@ public class ProcessUssd {
 
     public boolean checkValidUserPadme(String user_input, SubscriberInfo sub) {
         boolean isvalid = false;
+        RestTemplate restTemplate = new RestTemplate();
+
+        Map res = (Map) restTemplate.getForEntity(getProp("pamde.check_client") + sub.getMsisdn(), Map.class);
+        log.info("Response : {}", res);
+
         return isvalid;
     }
 
