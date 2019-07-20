@@ -6,8 +6,6 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.ks.qosussd.qosussd.core.Constants.*;
-
 public class ProcessUssd {
 
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
@@ -49,15 +47,23 @@ public class ProcessUssd {
             option3.setValue("Retrait");
             Option option4 = new Option();
             option4.setChoice(3);
-            option4.setValue("Transfert");
+            option4.setValue("Credit");
+            Option option2 = new Option();
+            option2.setChoice(4);
+            option2.setValue("Transfert");
             Option option5 = new Option();
-            option5.setChoice(4);
+            option5.setChoice(5);
             option5.setValue("Gestion des comptes");
+            Option option6 = new Option();
+            option6.setChoice(6);
+            option6.setValue("Operation pour tiers");
             OptionsType optionsType = new OptionsType();
             optionsType.getOption().add(option);
             optionsType.getOption().add(option3);
+            optionsType.getOption().add(option2);
             optionsType.getOption().add(option4);
             optionsType.getOption().add(option5);
+            optionsType.getOption().add(option6);
             moovUssdResponse.setOptions(optionsType);
 
         } else {
@@ -129,7 +135,7 @@ public class ProcessUssd {
                 .append("Frais : 200 fcfa ")
                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
                 .append("\n");
-        StringBuilder stringBuilder2 = new StringBuilder();
+      /*  StringBuilder stringBuilder2 = new StringBuilder();
         stringBuilder.append("Transfert de ")
                 .append(sub.getAmount())
                 .append(" fcfa de votre compte ")
@@ -137,16 +143,16 @@ public class ProcessUssd {
                 .append("sur votre compte Momo.\n")
                 .append("Frais : 200 fcfa ")
                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
-                .append("\n");
+                .append("\n");*/
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
-        if (sub.getSubParams().get("option2") == DEPOT) {
-            moovUssdResponse.setText(stringBuilder.toString());
+       /* if (sub.getSubParams().get("option2") == DEPOT) {
+
         } else if (sub.getSubParams().get("option2") == RETRAIT) {
             moovUssdResponse.setText(stringBuilder2.toString());
-        }
-
+        }*/
+        moovUssdResponse.setText(stringBuilder.toString());
         moovUssdResponse.setScreenType("menu");
         Option option = new Option();
         option.setChoice(1);
@@ -170,7 +176,7 @@ public class ProcessUssd {
                 .append(sub.getAmount())
                 .append(" fcfa de votre compte ")
                 .append(sub.getSubParams().get("option2"))
-                .append("sur votre compte Momo.\n")
+                .append(" sur votre compte Momo.\n")
                 .append("Frais : 200 fcfa ")
                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
                 .append("\n Entrer votre pin PADME pour continuer");
@@ -228,12 +234,12 @@ public class ProcessUssd {
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Epargne a vue");
-        Option option4 = new Option();
-        option4.setChoice(3);
-        option4.setValue("Compte courant");
+        Option option2 = new Option();
+        option2.setChoice(2);
+        option2.setValue("Compte courant");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
-        optionsType.getOption().add(option4);
+        optionsType.getOption().add(option2);
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }
@@ -241,5 +247,78 @@ public class ProcessUssd {
     public boolean checkValidUserPadme(String user_input, SubscriberInfo sub) {
         boolean isvalid = false;
         return isvalid;
+    }
+
+    public MoovUssdResponse moovLevel1Credit(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+        moovUssdResponse.setScreenType("menu");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        Option option = new Option();
+        option.setChoice(1);
+        option.setValue("Remboursement");
+        Option option3 = new Option();
+        option3.setChoice(2);
+        option3.setValue("Demande de crédit");
+        Option option4 = new Option();
+        option4.setChoice(3);
+        option4.setValue("Etat du crédit");
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option);
+        optionsType.getOption().add(option3);
+        optionsType.getOption().add(option4);
+        moovUssdResponse.setOptions(optionsType);
+
+
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse moovLevel2Credit(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+        moovUssdResponse.setScreenType("menu");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        Option option = new Option();
+        option.setChoice(1);
+        option.setValue("Montant a payer pour regulariser : 100 fcfa");
+        Option option3 = new Option();
+        option3.setChoice(2);
+        option3.setValue("Prochaine echeance  : 50 fcfa (Exigible le jj-mm-aaaa)");
+        Option option4 = new Option();
+        option4.setChoice(3);
+        option4.setValue("Autre montant à payer");
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option);
+        optionsType.getOption().add(option3);
+        optionsType.getOption().add(option4);
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse debitAccount(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+        moovUssdResponse.setScreenType("menu");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        Option option = new Option();
+        option.setChoice(1);
+        option.setValue("Momo");
+        Option option2 = new Option();
+        option2.setChoice(2);
+        option2.setValue("Epargne a vue");
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option);
+        optionsType.getOption().add(option2);
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
     }
 }

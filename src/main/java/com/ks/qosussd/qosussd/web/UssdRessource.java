@@ -79,23 +79,30 @@ public class UssdRessource {
                     System.out.println(sub);
                     return moovUssdResponse;
                 case 1:
-                    log.info("choix niveux 1");
+                    log.info("choix niveux " + sub.getMenuLevel());
                     select = Integer.parseInt(user_input);
+                    sub.incrementMenuLevel();
+                    log.info("choix niveux apres incre " + sub.getMenuLevel());
                     if (select == 1) {
                         log.info("choix depot ");
                         sub.getSubParams().put("option1", DEPOT);
-                        sub.incrementMenuLevel();
+
                         return processUssd.moovLevel1Depot(sub);
                     } else if (select == 2) {
-                        log.info("choix depot ");
+                        log.info("choix retrait ");
                         sub.getSubParams().put("option1", RETRAIT);
-                        sub.incrementMenuLevel();
+//                        sub.incrementMenuLevel();
                         return processUssd.moovLevel1Retrait(sub);
+                    } else if (select == 3) {
+                        log.info("choix retrait ");
+                        sub.getSubParams().put("option1", CREDIT);
+//                        sub.incrementMenuLevel();
+                        return processUssd.moovLevel1Credit(sub);
                     } else {
                         return processUssd.moovLevel1Depot(sub);
                     }
                 case 2:
-                    log.info("choix niveux 2");
+                    log.info("choix niveux {} ", sub.getMenuLevel());
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
                    /* switch (select){
@@ -105,14 +112,16 @@ public class UssdRessource {
                             }
                     }*/
                     if (select == 1 && sub.getSubParams().get("option1") == DEPOT) {
-                        log.info("choix depot plus {} ", sub.getSubParams().get("option1"));
+                        log.info("choix depot plus epargne ");
                         sub.getSubParams().put("option2", EPARGNE);
                         return processUssd.moovLevel1DepotCompte(sub);
-                    } else if (select == 2 && sub.getSubParams().get("option1") == DEPOT) {
+                    } else if (select == 2 && sub.getSubParams().get("option1").equals(DEPOT)) {
+                        log.info("choix depot plus plant tontine ");
                         sub.getSubParams().put("option2", PLAN_TONTINE);
                         return processUssd.moovLevel1DepotCompte(sub);
 
-                    } else if (select == 3 && sub.getSubParams().get("option1") == DEPOT) {
+                    } else if (select == 3 && sub.getSubParams().get("option1").equals(DEPOT)) {
+                        log.info("choix depot plus courant ");
                         sub.getSubParams().put("option2", COURANT);
                         return processUssd.moovLevel1DepotCompte(sub);
                     }
@@ -125,26 +134,67 @@ public class UssdRessource {
                         log.info("choix retrait plus {} ", sub.getSubParams().get("option1"));
                         sub.getSubParams().put("option2", COURANT);
                         return processUssd.moovLevel1DepotCompte(sub);
+                    }
+                    if (select == 1 && sub.getSubParams().get("option1") == CREDIT) {
+                        log.info("choix credi plus {} ", REMBOURSEMENT);
+                        sub.getSubParams().put("option2", REMBOURSEMENT);
+                        return processUssd.moovLevel2Credit(sub);
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.defaultException();
                     }
                 case 3:
                     log.info("Amount: {} ", user_input);
-                    sub.setAmount(new BigDecimal(user_input));
-                    sub.setUserInput(user_input);
+
                     sub.incrementMenuLevel();
                     if (sub.getSubParams().get("option1") == RETRAIT) {
+                        sub.setAmount(new BigDecimal(user_input));
+                        sub.setUserInput(user_input);
                         return processUssd.moovLevel3Retrait(sub);
-                    } else
+                    } else if (sub.getSubParams().get("option1") == DEPOT) {
+                        sub.setAmount(new BigDecimal(user_input));
+                        sub.setUserInput(user_input);
                         return processUssd.moovLevel1ResumEpargne(sub);
+                    } else if (sub.getSubParams().get("option1") == CREDIT) {
+                        if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
+                            select = Integer.parseInt(user_input);
+                            if (select == 1) {
+                                sub.getSubParams().put("otion3", REGURALISER);
+                                return processUssd.debitAccount(sub);
+                            }
+                            if (select == 2) {
+                                sub.getSubParams().put("otion3", ECHEANCE);
+                                return processUssd.debitAccount(sub);
+                            }
+                            if (select == 3) {
+                                sub.getSubParams().put("otion3", AUTRE_MONTANT);
+                                return processUssd.moovLevel1DepotCompte(sub);
+                            }
+                        }
+                        return processUssd.moovLevel1ResumEpargne(sub);
+                    }
+
 
                 case 4:
                     log.info("processe");
-                    if (sub.getSubParams().get("option1") == DEPOT){
+                    if (sub.getSubParams().get("option1") == DEPOT) {
                         select = Integer.parseInt(user_input);
-                    }else if(sub.getSubParams().get("option1") == RETRAIT){
+                        if (select == 1) {
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation("Merci de continuer l'operation en validant votre momo");
+                        } else {
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation("Operation annuler avec succes");
+                        }
+                    } else if (sub.getSubParams().get("option1") == RETRAIT) {
                         processUssd.checkValidUserPadme(user_input, sub);
+                        if (user_input.equals("1234")) {
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation("Votre operation est en cours de validation Merci.");
+                        } else {
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation("Code pin incorrect");
+                        }
                     }
                     activeSessions.remove(sub.getMsisdn());
                     return processUssd.endDeposit();
