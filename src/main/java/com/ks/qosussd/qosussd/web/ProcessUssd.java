@@ -124,6 +124,18 @@ public class ProcessUssd {
 
     }
 
+    public MoovUssdResponse enterAmount(SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Veuillez saisir le montant :");
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        return moovUssdResponse;
+
+    }
+
     public MoovUssdResponse moovLevel1ResumEpargne(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         StringBuilder stringBuilder = new StringBuilder();
@@ -168,6 +180,27 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
+    public MoovUssdResponse momoConfirmOption(String text, SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText(text);
+        moovUssdResponse.setScreenType("menu");
+        Option option = new Option();
+        option.setChoice(1);
+        option.setValue("Confirmer");
+        Option option1 = new Option();
+        option1.setChoice(2);
+        option1.setValue("Annuler");
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option);
+        optionsType.getOption().add(option1);
+        moovUssdResponse.setOptions(optionsType);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        return moovUssdResponse;
+    }
+
 
     public MoovUssdResponse moovLevel3Retrait(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -184,6 +217,17 @@ public class ProcessUssd {
         moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText(stringBuilder.toString());
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse padmeConfirmOption(String text, SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText(text);
         moovUssdResponse.setScreenType("form");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
         return moovUssdResponse;
@@ -320,5 +364,22 @@ public class ProcessUssd {
         optionsType.getOption().add(option2);
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
+    }
+
+
+    public MoovUssdResponse getMoovUssdResponseConfirm(String user_input, SubscriberInfo sub) {
+        int select = Integer.parseInt(user_input);
+        if (select == 1) {
+            activeSessions.remove(sub.getMsisdn());
+            return endOperation("Merci de continuer l'operation en validant votre momo");
+        } else {
+            // add check padme verifie id
+            activeSessions.remove(sub.getMsisdn());
+            return endOperation("Operation annuler avec succes");
+        }
+    }
+
+    public String infoCredit(SubscriberInfo sub) {
+        return "info credit";
     }
 }

@@ -139,6 +139,18 @@ public class UssdRessource {
                         log.info("choix credi plus {} ", REMBOURSEMENT);
                         sub.getSubParams().put("option2", REMBOURSEMENT);
                         return processUssd.moovLevel2Credit(sub);
+                    }
+                    if (select == 2 && sub.getSubParams().get("option1") == CREDIT) {
+                        log.info("choix credi plus {} ", DEMANDE_CREDIT);
+                        sub.getSubParams().put("option2", DEMANDE_CREDIT);
+                        return processUssd.enterAmount(sub);
+                    }
+                    if (select == 3 && sub.getSubParams().get("option1") == CREDIT) {
+                        log.info("choix credi plus {} ", ETAT_CREDIT);
+                        sub.getSubParams().put("option2", ETAT_CREDIT);
+                        String infoCredi = processUssd.infoCredit(sub);
+                        activeSessions.remove(sub.getMsisdn());
+                        return processUssd.endOperation(infoCredi);
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.defaultException();
@@ -159,33 +171,36 @@ public class UssdRessource {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
                             select = Integer.parseInt(user_input);
                             if (select == 1) {
-                                sub.getSubParams().put("otion3", REGURALISER);
+                                log.info("Credit rembousement regulariser");
+                                sub.getSubParams().put("option3", REGURALISER);
                                 return processUssd.debitAccount(sub);
                             }
                             if (select == 2) {
-                                sub.getSubParams().put("otion3", ECHEANCE);
+                                sub.getSubParams().put("option3", ECHEANCE);
+                                log.info("Credit rembousement echeance");
                                 return processUssd.debitAccount(sub);
                             }
                             if (select == 3) {
-                                sub.getSubParams().put("otion3", AUTRE_MONTANT);
+                                log.info("Credit rembousement autre montant");
+                                sub.getSubParams().put("option3", AUTRE_MONTANT);
                                 return processUssd.moovLevel1DepotCompte(sub);
                             }
                         }
-                        return processUssd.moovLevel1ResumEpargne(sub);
+                        if ((sub.getSubParams().get("option2").equals(DEMANDE_CREDIT))) {
+                            String res = "Nous accusons reception de votre demande de credit. Un agent de PADME vous contactera sous peu. \n" +
+                                    "Nous vous remercions d’avoir utiliser le service push-pull de PADME.";
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation(res);
+                        }
+//                        return processUssd.moovLevel1ResumEpargne(sub);
                     }
 
 
                 case 4:
                     log.info("processe");
+                    sub.incrementMenuLevel();
                     if (sub.getSubParams().get("option1") == DEPOT) {
-                        select = Integer.parseInt(user_input);
-                        if (select == 1) {
-                            activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Merci de continuer l'operation en validant votre momo");
-                        } else {
-                            activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Operation annuler avec succes");
-                        }
+                        return processUssd.getMoovUssdResponseConfirm(user_input, sub);
                     } else if (sub.getSubParams().get("option1") == RETRAIT) {
                         processUssd.checkValidUserPadme(user_input, sub);
                         if (user_input.equals("1234")) {
@@ -195,9 +210,91 @@ public class UssdRessource {
                             activeSessions.remove(sub.getMsisdn());
                             return processUssd.endOperation("Code pin incorrect");
                         }
+                    } else if (sub.getSubParams().get("option1").equals(CREDIT)) {
+                        if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
+                            log.info("Credit rembousement");
+                            if (sub.getSubParams().get("option3").equals(REGURALISER) || sub.getSubParams().get("option3").equals(ECHEANCE)) {
+                                select = Integer.parseInt(user_input);
+                                StringBuilder stringBuilder = new StringBuilder();
+                                stringBuilder.append("Remboursement de ")
+                                        .append("xxxx")
+                                        .append(" fcfa, frais 200 fcfa Total : ");
+
+                                if (select == 1) {
+                                    log.info("Credit rembousement option momo");
+                                    return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
+                                }
+                                if (select == 2) {
+                                    log.info("Credit rembousement option momo epargne");
+                                    return processUssd.padmeConfirmOption(stringBuilder.toString(), sub);
+                                }
+                            }
+                            if (sub.getSubParams().get("option3").equals(AUTRE_MONTANT)) {
+                                sub.setAmount(new BigDecimal(user_input));
+                                return processUssd.debitAccount(sub);
+                            }
+
+                        }
+
                     }
                     activeSessions.remove(sub.getMsisdn());
                     return processUssd.endDeposit();
+                case 5:
+                    log.info("case 5");
+                    sub.incrementMenuLevel();
+                    if (sub.getSubParams().get("option1").equals(CREDIT)) {
+                        if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
+                            if (sub.getSubParams().get("option3").equals(REGURALISER) || sub.getSubParams().get("option3").equals(ECHEANCE)) {
+                                return processUssd.getMoovUssdResponseConfirm(user_input, sub);
+                            }
+                            if (sub.getSubParams().get("option3").equals(AUTRE_MONTANT)) {
+                                select = Integer.parseInt(user_input);
+                                StringBuilder stringBuilder = new StringBuilder();
+                                stringBuilder.append("Remboursement de ")
+                                        .append("xxxx")
+                                        .append(" fcfa, frais 200 fcfa Total : ");
+                                sub.setAmount(new BigDecimal(user_input));
+                                if (select == 1) {
+                                    log.info("Credit rembousement option momo");
+                                    return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
+                                }
+                                if (select == 2) {
+                                    log.info("Credit rembousement option momo epargne");
+                                    return processUssd.padmeConfirmOption(stringBuilder.toString(), sub);
+                                }
+                            }
+
+                        }
+
+
+                    }
+                case 6:
+                    log.info("case 6");
+                    sub.incrementMenuLevel();
+                    if (sub.getSubParams().get("option1").equals(CREDIT)) {
+                        if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
+                            select = Integer.parseInt(user_input);
+                            StringBuilder stringBuilder = new StringBuilder();
+                            stringBuilder.append("Remboursement de ")
+                                    .append("xxxx")
+                                    .append(" fcfa, frais 200 fcfa Total : ");
+                            if (sub.getSubParams().get("option3").equals(AUTRE_MONTANT)) {
+                                return processUssd.getMoovUssdResponseConfirm(user_input, sub);
+                            }
+                        }
+
+
+                    }
+                case 7:
+                    log.info("case 7");
+
+                    if (sub.getSubParams().get("option1").equals(CREDIT)) {
+                        if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
+                            if (sub.getSubParams().get("option3").equals(AUTRE_MONTANT)) {
+
+                            }
+                        }
+                    }
                 default:
 
                     log.info("Choix autre USSD");

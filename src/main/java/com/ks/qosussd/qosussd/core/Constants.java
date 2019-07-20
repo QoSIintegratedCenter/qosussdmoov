@@ -12,4 +12,6 @@ public class Constants {
     public static final String EPARGNE = "epargne";
     public static final String PLAN_TONTINE = "tontine";
     public static final String COURANT = "courant";
+    public static final String DEMANDE_CREDIT = "demandecredit";
+    public static final String ETAT_CREDIT = "etatcredi";
 }
