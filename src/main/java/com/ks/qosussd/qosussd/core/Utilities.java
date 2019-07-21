@@ -1,8 +1,12 @@
 package com.ks.qosussd.qosussd.core;
 
+import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import org.springframework.http.HttpHeaders;
+
+import java.nio.charset.Charset;
 
 @Configuration
 public class Utilities {
@@ -28,5 +32,15 @@ public class Utilities {
             builder.append(ALPHA_NUMERIC_STRING.charAt(character));
         }
         return builder.toString();
+    }
+
+    public static HttpHeaders createHeaders(String username, String password) {
+        return new HttpHeaders() {{
+            String auth = username + ":" + password;
+            byte[] encodedAuth = Base64.encodeBase64(
+                    auth.getBytes(Charset.forName("UTF-8")));
+            String authHeader = "Basic " + new String(encodedAuth);
+            set("Authorization", authHeader);
+        }};
     }
 }

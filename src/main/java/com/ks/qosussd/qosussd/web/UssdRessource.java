@@ -172,11 +172,13 @@ public class UssdRessource {
                             if (select == 1) {
                                 log.info("Credit rembousement regulariser");
                                 sub.getSubParams().put("option3", REGURALISER);
+                                sub.setAmount(new BigDecimal((int) sub.getSubParams().get(REGURALISER)));
                                 return processUssd.debitAccount(sub);
                             }
                             if (select == 2) {
                                 sub.getSubParams().put("option3", ECHEANCE);
                                 log.info("Credit rembousement echeance");
+                                sub.setAmount(new BigDecimal((int) sub.getSubParams().get(ECHEANCE)));
                                 return processUssd.debitAccount(sub);
                             }
                             if (select == 3) {
@@ -250,9 +252,11 @@ public class UssdRessource {
                                 select = Integer.parseInt(user_input);
                                 StringBuilder stringBuilder = new StringBuilder();
                                 stringBuilder.append("Remboursement de ")
-                                        .append("xxxx")
-                                        .append(" fcfa, frais 200 fcfa Total : ");
-                                sub.setAmount(new BigDecimal(user_input));
+                                        .append(sub.getAmount())
+                                        .append(" fcfa, frais 200 fcfa Total : ")
+                                        .append(sub.getAmount().add(new BigDecimal(200)))
+                                        .append(" fcfa.");
+                                ;
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
                                     return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
@@ -303,7 +307,7 @@ public class UssdRessource {
                     moovUssdResponse.setHomeLink(0);
                     moovUssdResponse.setScreenId(1);
                     moovUssdResponse.setScreenType("form");
-                    moovUssdResponse.setSessionOp(TypeOperation.END);
+                    moovUssdResponse.setSessionOp(TypeOperation.END.getType());
                     log.info("MoovUssdResponse : {}", moovUssdResponse);
                     return moovUssdResponse;
             }

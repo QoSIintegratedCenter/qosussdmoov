@@ -2,6 +2,7 @@ package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -24,7 +25,7 @@ public class ProcessUssd {
         moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
 
         Option option = new Option();
         option.setChoice(1);
@@ -45,7 +46,7 @@ public class ProcessUssd {
         if (checkNumberExist(sub.getMsisdn())) {
             moovUssdResponse.setText("PADME \n Selectionner un numero puis appuyer sur envoyer");
             moovUssdResponse.setScreenType("menu");
-            moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+            moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
             Option option = new Option();
             option.setChoice(1);
             option.setValue("Depot");
@@ -77,7 +78,7 @@ public class ProcessUssd {
             moovUssdResponse.setText("Ce numero n'a pas un compte chez padme");
             moovUssdResponse.setScreenType("form");
             activeSessions.remove(sub.getMsisdn());
-            moovUssdResponse.setSessionOp(TypeOperation.END);
+            moovUssdResponse.setSessionOp(TypeOperation.END.getType());
         }
 
 
@@ -92,7 +93,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Epargne a vue");
@@ -112,38 +113,14 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
-    boolean checkNumberExist(String phoneNumber) {
-        boolean existe = true;
-        RestTemplate restTemplate = new RestTemplate();
-
-
-        try {
-            System.out.println(getProp("pamde.check_client") + phoneNumber);
-
-            Map res = restTemplate.getForObject(getProp("pamde.check_client") + phoneNumber, Map.class);
-            System.out.println(res);
-            if (res == null) {
-                existe = false;
-            } else {
-                existe = true;
-                log.info("Response : {}", res);
-            }
-        } catch (Exception e) {
-            log.error("error : {}", e);
-            existe = false;
-        }
-
-
-        return existe;
-    }
 
     public MoovUssdResponse moovLevel1DepotCompte(SubscriberInfo sub) {
         String text = "Veuillez saisir le montant :";
-        return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE, Integer.parseInt(sub.getScreenId()));
+        return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
 
     }
 
-    private MoovUssdResponse getMoovUssdResponse(String text, String type, TypeOperation typeOperation, int screenId) {
+    private MoovUssdResponse getMoovUssdResponse(String text, String type, String typeOperation, int screenId) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
@@ -156,7 +133,7 @@ public class ProcessUssd {
 
     public MoovUssdResponse enterAmount(SubscriberInfo sub) {
         String text = "Veuillez saisir le montant :";
-        return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE, Integer.parseInt(sub.getScreenId()));
+        return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
 
     }
 
@@ -190,7 +167,7 @@ public class ProcessUssd {
         moovUssdResponse.setText(stringBuilder.toString());
         moovUssdResponse.setScreenType("menu");
         */
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(stringBuilder.toString(), "menu", TypeOperation.CONTINUE, Integer.parseInt(sub.getScreenId()));
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(stringBuilder.toString(), "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Confirmer");
@@ -222,7 +199,7 @@ public class ProcessUssd {
         optionsType.getOption().add(option);
         optionsType.getOption().add(option1);
         moovUssdResponse.setOptions(optionsType);
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         return moovUssdResponse;
     }
 
@@ -243,7 +220,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText(stringBuilder.toString());
         moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         return moovUssdResponse;
     }
 
@@ -254,7 +231,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText(text);
         moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         return moovUssdResponse;
     }
 
@@ -265,7 +242,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Mauvais choix, merci de reessayer");
         moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.END);
+        moovUssdResponse.setSessionOp(TypeOperation.END.getType());
         return moovUssdResponse;
     }
 
@@ -276,12 +253,12 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Merci de valider momo pour confirmer votre operation");
         moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.END);
+        moovUssdResponse.setSessionOp(TypeOperation.END.getType());
         return moovUssdResponse;
     }
 
     public MoovUssdResponse endOperation(String text) {
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.END, 1);
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.END.getType(), 1);
 
         return moovUssdResponse;
     }
@@ -294,7 +271,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Epargne a vue");
@@ -325,7 +302,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Remboursement");
@@ -346,29 +323,27 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse moovLevel2Credit(SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
-        moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        Map infoCredit = getInfoCredit(sub);
         Option option = new Option();
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Selectionner un numero puis appuyer sur envoyer \n Type de remboursement", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         option.setChoice(1);
-        option.setValue("Montant a payer pour regulariser : 100 fcfa");
+        sub.getSubParams().put(Constants.REGURALISER, infoCredit.get("restePourSolde"));
+        sub.getSubParams().put(Constants.ECHEANCE, infoCredit.get("montantEcheance"));
+        option.setValue("Montant a payer pour regulariser :" + infoCredit.get("restePourSolde") + " fcfa");
         Option option3 = new Option();
         option3.setChoice(2);
-        option3.setValue("Prochaine echeance  : 50 fcfa (Exigible le jj-mm-aaaa)");
+        option3.setValue("Prochaine echeance  " + infoCredit.get("montantEcheance") + " fcfa ");
         Option option4 = new Option();
         option4.setChoice(3);
-        option4.setValue("Autre montant à payer");
-        OptionsType optionsType = new OptionsType();
-        optionsType.getOption().add(option);
-        optionsType.getOption().add(option3);
-        optionsType.getOption().add(option4);
-        moovUssdResponse.setOptions(optionsType);
+        option4.setValue("Autre montant a payer");
+        OptionsType optionsTypeC = new OptionsType();
+        optionsTypeC.getOption().add(option);
+        optionsTypeC.getOption().add(option3);
+        optionsTypeC.getOption().add(option4);
+        moovUssdResponse.setOptions(optionsTypeC);
         return moovUssdResponse;
     }
+
 
     public MoovUssdResponse debitAccount(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -377,7 +352,7 @@ public class ProcessUssd {
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Momo");
@@ -412,6 +387,9 @@ public class ProcessUssd {
             data.put("transref", randomAlphaNumeric());
             data.put("amount", sub.getAmount().add(new BigDecimal(200)));
             RestTemplate restTemplate = new RestTemplate();
+            restTemplate.getInterceptors().add(
+                    new BasicAuthorizationInterceptor(getProp("momo_moov_username"), getProp("momo_moov_password")));
+//            HttpEntity<String> request = new HttpEntity<String>(createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password")));
             try {
                 Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
                 log.info("response payement {} ", res);
@@ -428,6 +406,56 @@ public class ProcessUssd {
     }
 
     public String infoCredit(SubscriberInfo sub) {
-        return "info credit";
+        Map infoCredit = getInfoCredit(sub);
+        StringBuilder builder = new StringBuilder();
+        builder.append("Etat du crédit :\n" +
+                "\n" +
+                "Montant du crédit : " + infoCredit.get("montoDesembolso") + "\n" +
+                "Montant échéance : " + infoCredit.get("montantEcheance") + "\n" +
+                "Montant impayé : " + infoCredit.get("montantImpaye") + "\n" +
+                "Reste à solder : " + infoCredit.get("restePourSolde") + "\n" +
+                "Date de la dernière échance : " + infoCredit.get("dateDerniereEcheance"));
+        return builder.toString();
+    }
+
+    private Map getInfoCredit(SubscriberInfo sub) {
+
+        RestTemplate restTemplate = new RestTemplate();
+        Map res = new HashMap();
+
+        try {
+//            System.out.println(getProp("pamde.check_client") + phoneNumber);
+            res = restTemplate.getForObject(getProp("infocredit") + sub.getMsisdn(), Map.class);
+            log.info("Get credit infos : {}", res);
+            return res;
+        } catch (Exception e) {
+            log.error("Error to get infos credit : {}", e);
+            return res;
+        }
+    }
+
+    boolean checkNumberExist(String phoneNumber) {
+        boolean existe = true;
+        RestTemplate restTemplate = new RestTemplate();
+
+
+        try {
+            System.out.println(getProp("pamde.check_client") + phoneNumber);
+
+            Map res = restTemplate.getForObject(getProp("pamde.check_client") + phoneNumber, Map.class);
+            System.out.println(res);
+            if (res == null) {
+                existe = false;
+            } else {
+                existe = true;
+                log.info("Response : {}", res);
+            }
+        } catch (Exception e) {
+            log.error("error : {}", e);
+            existe = false;
+        }
+
+
+        return existe;
     }
 }
