@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 import static com.ks.qosussd.qosussd.core.Utilities.getProp;
+import static com.ks.qosussd.qosussd.core.Utilities.randomAlphaNumeric;
 
 @Slf4j
 public class ProcessUssd {
@@ -65,8 +67,8 @@ public class ProcessUssd {
             OptionsType optionsType = new OptionsType();
             optionsType.getOption().add(option);
             optionsType.getOption().add(option3);
-            optionsType.getOption().add(option2);
             optionsType.getOption().add(option4);
+            optionsType.getOption().add(option2);
             optionsType.getOption().add(option5);
             optionsType.getOption().add(option6);
             moovUssdResponse.setOptions(optionsType);
@@ -74,7 +76,7 @@ public class ProcessUssd {
         } else {
             moovUssdResponse.setText("Ce numero n'a pas un compte chez padme");
             moovUssdResponse.setScreenType("form");
-
+            activeSessions.remove(sub.getMsisdn());
             moovUssdResponse.setSessionOp(TypeOperation.END);
         }
 
@@ -136,31 +138,29 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse moovLevel1DepotCompte(SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText("Veuillez saisir le montant :");
-        moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
-        return moovUssdResponse;
+        String text = "Veuillez saisir le montant :";
+        return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE, Integer.parseInt(sub.getScreenId()));
 
     }
 
-    public MoovUssdResponse enterAmount(SubscriberInfo sub) {
+    private MoovUssdResponse getMoovUssdResponse(String text, String type, TypeOperation typeOperation, int screenId) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText("Veuillez saisir le montant :");
-        moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+        moovUssdResponse.setScreenId(screenId);
+        moovUssdResponse.setText(text);
+        moovUssdResponse.setScreenType(type);
+        moovUssdResponse.setSessionOp(typeOperation);
         return moovUssdResponse;
+    }
+
+    public MoovUssdResponse enterAmount(SubscriberInfo sub) {
+        String text = "Veuillez saisir le montant :";
+        return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE, Integer.parseInt(sub.getScreenId()));
 
     }
 
     public MoovUssdResponse moovLevel1ResumEpargne(SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Transfert de ")
                 .append(sub.getAmount())
@@ -178,7 +178,7 @@ public class ProcessUssd {
                 .append("sur votre compte Momo.\n")
                 .append("Frais : 200 fcfa ")
                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
-                .append("\n");*/
+                .append("\n");
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
@@ -186,9 +186,11 @@ public class ProcessUssd {
 
         } else if (sub.getSubParams().get("option2") == RETRAIT) {
             moovUssdResponse.setText(stringBuilder2.toString());
-        }*/
+        }* /
         moovUssdResponse.setText(stringBuilder.toString());
         moovUssdResponse.setScreenType("menu");
+        */
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(stringBuilder.toString(), "menu", TypeOperation.CONTINUE, Integer.parseInt(sub.getScreenId()));
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Confirmer");
@@ -199,7 +201,7 @@ public class ProcessUssd {
         optionsType.getOption().add(option);
         optionsType.getOption().add(option1);
         moovUssdResponse.setOptions(optionsType);
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
+//        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
         return moovUssdResponse;
     }
 
@@ -279,13 +281,8 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse endOperation(String text) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText(text);
-        moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.END);
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.END, 1);
+
         return moovUssdResponse;
     }
 
@@ -399,6 +396,29 @@ public class ProcessUssd {
         int select = Integer.parseInt(user_input);
         if (select == 1) {
             activeSessions.remove(sub.getMsisdn());
+            Map data = new HashMap();
+               /*const data = {
+                    'msisdn': this.config.getDefaultPhoneNumber(),
+                    'amount': +amont + this.config.getFraisTrans,
+                    'firstname': 'padme',
+                    'lastname': 'Qos',
+                    'clientid': this.config.getclientId,
+                    'transref': this.config.makeid()
+                        };*/
+            data.put("msisdn", sub.getMsisdn());
+            data.put("firstname", "padme");
+            data.put("lastname", "Qos");
+            data.put("clientid", getProp("momo_moov_clientId"));
+            data.put("transref", randomAlphaNumeric());
+            data.put("amount", sub.getAmount().add(new BigDecimal(200)));
+            RestTemplate restTemplate = new RestTemplate();
+            try {
+                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+                log.info("response payement {} ", res);
+            } catch (Exception e) {
+                log.error("Error to sent request payement {} ", e.getMessage());
+            }
+
             return endOperation("Merci de continuer l'operation en validant votre momo");
         } else {
             // add check padme verifie id

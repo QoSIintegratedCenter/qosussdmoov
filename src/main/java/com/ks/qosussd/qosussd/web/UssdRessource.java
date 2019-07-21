@@ -79,14 +79,13 @@ public class UssdRessource {
                     System.out.println(sub);
                     return moovUssdResponse;
                 case 1:
-                    log.info("choix niveux " + sub.getMenuLevel());
+                    log.info("choix nivaux " + sub.getMenuLevel());
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
-                    log.info("choix niveux apres incre " + sub.getMenuLevel());
+//                    log.info("choix niveux apres incre " + sub.getMenuLevel());
                     if (select == 1) {
                         log.info("choix depot ");
                         sub.getSubParams().put("option1", DEPOT);
-
                         return processUssd.moovLevel1Depot(sub);
                     } else if (select == 2) {
                         log.info("choix retrait ");
