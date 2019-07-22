@@ -41,6 +41,7 @@ public class Utilities {
                     auth.getBytes(Charset.forName("UTF-8")));
             String authHeader = "Basic " + new String(encodedAuth);
             set("Authorization", authHeader);
+            set("Content-type", "Application/json");
         }};
     }
 }

@@ -2,7 +2,9 @@ package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.client.support.BasicAuthorizationInterceptor;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -10,8 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.ks.qosussd.qosussd.core.Utilities.getProp;
-import static com.ks.qosussd.qosussd.core.Utilities.randomAlphaNumeric;
+import static com.ks.qosussd.qosussd.core.Utilities.*;
 
 @Slf4j
 public class ProcessUssd {
@@ -387,11 +388,15 @@ public class ProcessUssd {
             data.put("transref", randomAlphaNumeric());
             data.put("amount", sub.getAmount().add(new BigDecimal(200)));
             RestTemplate restTemplate = new RestTemplate();
-            restTemplate.getInterceptors().add(
-                    new BasicAuthorizationInterceptor(getProp("momo_moov_username"), getProp("momo_moov_password")));
+            HttpHeaders headers = new HttpHeaders();
+
+           /* restTemplate.getInterceptors().add(
+                    new BasicAuthorizationInterceptor(getProp("momo_moov_username"), getProp("momo_moov_password")));*/
 //            HttpEntity<String> request = new HttpEntity<String>(createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password")));
             try {
-                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+                Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
                 log.info("response payement {} ", res);
             } catch (Exception e) {
                 log.error("Error to sent request payement {} ", e.getMessage());
