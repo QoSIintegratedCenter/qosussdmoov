@@ -1,6 +1,7 @@
 package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
+import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -291,9 +292,9 @@ public class ProcessUssd {
         boolean isvalid = false;
         RestTemplate restTemplate = new RestTemplate();
 
-        Map res =  restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn(), Map.class);
+        Map res = restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn(), Map.class);
         log.info("Response : {}", res);
-        if(res != null && res.get("") != null){
+        if (res != null && res.get("") != null) {
             isvalid = true;
         }
 
@@ -393,7 +394,7 @@ public class ProcessUssd {
             data.put("transref", randomAlphaNumeric());
             data.put("amount", sub.getAmount().add(new BigDecimal(200)));
             RestTemplate restTemplate = new RestTemplate();
-            HttpHeaders headers = new HttpHeaders();
+
 
            /* restTemplate.getInterceptors().add(
                     new BasicAuthorizationInterceptor(getProp("momo_moov_username"), getProp("momo_moov_password")));*/
@@ -403,6 +404,9 @@ public class ProcessUssd {
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
                 Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
                 log.info("response payement {} ", res);
+                if (res.get("responsecode").equals("01")) {
+                    new ApiConnect().startChecking(data);
+                }
 
             } catch (Exception e) {
                 log.error("Error to sent request payement {} ", e.getMessage());
