@@ -6,11 +6,9 @@ import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.web.client.RestTemplate;
-import sun.rmi.runtime.Log;
 
 import java.time.Duration;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 

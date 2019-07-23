@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import static com.ks.qosussd.qosussd.core.Constants.*;
@@ -72,7 +73,7 @@ public class UssdRessource {
             switch (sub.getMenuLevel()) {
                 case 0:
                     log.info("Choix 1 USSD");
-                    new ApiConnect().startChecking();
+                    new ApiConnect().startChecking(new HashMap());
                     log.info("Start sub {} ", activeSessions.get(msisdn));
                     sub.incrementMenuLevel();
                     moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
