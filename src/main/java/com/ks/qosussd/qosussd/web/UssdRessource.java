@@ -1,6 +1,7 @@
 package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
+import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -71,6 +72,7 @@ public class UssdRessource {
             switch (sub.getMenuLevel()) {
                 case 0:
                     log.info("Choix 1 USSD");
+                    new ApiConnect().startChecking();
                     log.info("Start sub {} ", activeSessions.get(msisdn));
                     sub.incrementMenuLevel();
                     moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
@@ -80,6 +82,7 @@ public class UssdRessource {
                     return moovUssdResponse;
                 case 1:
                     log.info("choix nivaux " + sub.getMenuLevel());
+
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
 //                    log.info("choix niveux apres incre " + sub.getMenuLevel());

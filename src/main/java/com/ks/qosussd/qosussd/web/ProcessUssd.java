@@ -18,6 +18,7 @@ import static com.ks.qosussd.qosussd.core.Utilities.*;
 public class ProcessUssd {
 
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
+    public static final ConcurrentHashMap<String, SubscriberInfo> oldSessions = new ConcurrentHashMap<>();
 
     MoovUssdResponse welcomLevel(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -290,8 +291,11 @@ public class ProcessUssd {
         boolean isvalid = false;
         RestTemplate restTemplate = new RestTemplate();
 
-        Map res = (Map) restTemplate.getForEntity(getProp("pamde.check_client") + sub.getMsisdn(), Map.class);
+        Map res =  restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn(), Map.class);
         log.info("Response : {}", res);
+        if(res != null && res.get("") != null){
+            isvalid = true;
+        }
 
         return isvalid;
     }
@@ -372,6 +376,7 @@ public class ProcessUssd {
         int select = Integer.parseInt(user_input);
         if (select == 1) {
             activeSessions.remove(sub.getMsisdn());
+            oldSessions.put(sub.getMsisdn(), sub);
             Map data = new HashMap();
                /*const data = {
                     'msisdn': this.config.getDefaultPhoneNumber(),
@@ -398,6 +403,7 @@ public class ProcessUssd {
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
                 Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
                 log.info("response payement {} ", res);
+
             } catch (Exception e) {
                 log.error("Error to sent request payement {} ", e.getMessage());
             }
