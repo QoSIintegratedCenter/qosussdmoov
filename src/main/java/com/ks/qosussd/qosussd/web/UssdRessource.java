@@ -73,7 +73,7 @@ public class UssdRessource {
             switch (sub.getMenuLevel()) {
                 case 0:
                     log.info("Choix 1 USSD");
-                    new ApiConnect().startChecking(new HashMap());
+//                    new ApiConnect().startChecking(new HashMap());
                     log.info("Start sub {} ", activeSessions.get(msisdn));
                     sub.incrementMenuLevel();
                     moovUssdResponse = processUssd.moovLevel1(activeSessions.get(msisdn));
@@ -83,7 +83,6 @@ public class UssdRessource {
                     return moovUssdResponse;
                 case 1:
                     log.info("choix nivaux " + sub.getMenuLevel());
-
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
 //                    log.info("choix niveux apres incre " + sub.getMenuLevel());
@@ -108,12 +107,6 @@ public class UssdRessource {
                     log.info("choix niveux {} ", sub.getMenuLevel());
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
-                   /* switch (select){
-                        case 1:
-                            switch (sub.getSubParams().get("option1").toString()){
-                                case DEPOT :
-                            }
-                    }*/
                     if (select == 1 && sub.getSubParams().get("option1") == DEPOT) {
                         log.info("choix depot plus epargne ");
                         sub.getSubParams().put("option2", EPARGNE);
