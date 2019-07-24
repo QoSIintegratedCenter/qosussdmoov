@@ -145,4 +145,8 @@ public class ApiConnect {
             return res;
         }
     }
+
+    public void checkPadmeStatus(Map map){
+
+    }
 }
