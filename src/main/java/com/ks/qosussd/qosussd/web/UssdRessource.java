@@ -15,6 +15,7 @@ import java.util.List;
 
 import static com.ks.qosussd.qosussd.core.Constants.*;
 import static com.ks.qosussd.qosussd.web.ProcessUssd.activeSessions;
+import static com.ks.qosussd.qosussd.web.ProcessUssd.oldSessions;
 
 @RestController
 @Slf4j
@@ -201,12 +202,20 @@ public class UssdRessource {
                         return processUssd.getMoovUssdResponseConfirm(user_input, sub);
                     } else if (sub.getSubParams().get("option1") == RETRAIT) {
                         processUssd.checkValidUserPadme(user_input, sub);
-                        if (user_input.equals("1234")) {
+                        if (processUssd.checkValidUserPadme(user_input, sub)) {
+                            String txt = "";
+                           if(processUssd.checkAccounAvailable(sub)) {
+                               txt ="Votre operation est en cours de validation Merci.";
+                               processUssd.retraitProcess(sub);
+                           }else {
+                               txt= "Solde insuffisant";
+                           }
+                            oldSessions.put(sub.getMsisdn(), sub);
                             activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Votre operation est en cours de validation Merci.");
+                            return processUssd.endOperation(txt);
                         } else {
                             activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Code pin incorrect");
+                            return processUssd.endOperation("Code pin incorrect. Merci de reesayer");
                         }
                     } else if (sub.getSubParams().get("option1").equals(CREDIT)) {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {

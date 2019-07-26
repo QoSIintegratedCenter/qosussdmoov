@@ -19,6 +19,7 @@ import java.util.concurrent.ScheduledFuture;
 import static com.ks.qosussd.qosussd.core.Constants.*;
 import static com.ks.qosussd.qosussd.core.Utilities.createHeaders;
 import static com.ks.qosussd.qosussd.core.Utilities.getProp;
+import static com.ks.qosussd.qosussd.core.Utilities.randomAlphaNumeric;
 import static com.ks.qosussd.qosussd.web.ProcessUssd.oldSessions;
 
 @Slf4j
@@ -27,12 +28,13 @@ public class ApiConnect {
     private TaskScheduler taskScheduler = new ConcurrentTaskScheduler();
     private ScheduledFuture<?> scheduledFuture;
     RestTemplate restTemplate = new RestTemplate();
+
     public void checkMomoTransation(Map map, ScheduledFuture<?> scheduledFuture) {
         log.info("State start {} end  {} ", this.startDate, new Date());
         log.info("Shedulde {} ", scheduledFuture.isCancelled());
         RestTemplate restTemplate = new RestTemplate();
 //        this.startDate.getMinutes()
-        if (new Date().getTime() - this.startDate.getTime() > 20 * 1000) {
+        if (new Date().getTime() - this.startDate.getTime() > 5 * 60 * 1000) {
             log.info("cancel sheduler time out data ==> {} ", map.get("msisdn"));
             scheduledFuture.cancel(true);
         } else {
@@ -52,6 +54,7 @@ public class ApiConnect {
     }
 
     private void postDataToPadmeDatabase(Map map) {
+        Map transData = new HashMap();
          /* const transData = {
                 'origine': this.config.getDefaultPhoneNumber(),
                 'codCuenta': this.acountNumber,
@@ -72,8 +75,10 @@ public class ApiConnect {
         String type = "";
         String observation = "";
         String tipoTrans = "";
+        String ref = "";
         if (customer.getSubParams().get("option1").equals(DEPOT)) {
             type = "Depot";
+            ref = (String) map.get("transref");
             if (customer.getSubParams().get("option2").equals(EPARGNE)) {
                 tipoTrans = "103";
                 observation = "Dépôt sur compte épargne";
@@ -85,6 +90,7 @@ public class ApiConnect {
             }
         } else if (customer.getSubParams().get("option1").equals(RETRAIT)) {
             type = "Retrait";
+            ref = randomAlphaNumeric();
 
             if (customer.getSubParams().get("option2").equals(EPARGNE)) {
                 tipoTrans = "103";
@@ -97,12 +103,10 @@ public class ApiConnect {
             }
         }
 
-
-        Map transData = new HashMap();
         transData.put("origine", customer.getMsisdn());
         transData.put("codCuenta", accountInfo.get("codCuenta"));
         transData.put("codSistema", "AH");
-        transData.put("refTransQos", map.get("transref"));
+        transData.put("refTransQos", ref);
         transData.put("estPrisEnCompte", 0);
         transData.put("fecha", LocalDateTime.now());
         transData.put("tipoTrans", tipoTrans);
@@ -116,8 +120,19 @@ public class ApiConnect {
         Map res = restTemplate.postForObject(getProp("transaction"), transData, Map.class);
         if (res != null) {
             log.info("transation save successful : {}", res);
-
+            if (customer.getSubParams().get("option1").equals(RETRAIT)) {
+                startPadmeChecking(transData);
+            }
         }
+    }
+
+    private void startPadmeChecking(Map transData) {
+        this.startDate = new Date();
+        Duration duration = Duration.ofMillis(5000L);
+        log.info("starDate padme {}", this.startDate);
+//        ScheduledFuture<?> finalScheduledFuture = scheduledFuture;
+        this.scheduledFuture = this.taskScheduler.scheduleAtFixedRate(() -> checkPadmeStatus(transData, this.scheduledFuture), duration);
+
     }
 
     public void startChecking(Map map) {
@@ -146,7 +161,44 @@ public class ApiConnect {
         }
     }
 
-    public void checkPadmeStatus(Map map){
+    public void checkPadmeStatus(Map map, ScheduledFuture<?> scheduledFuture) {
+        RestTemplate restTemplate = new RestTemplate();
+        Map res = new HashMap();
 
+        try {
+
+            res = restTemplate.getForObject(getProp("transaction_padme") + "/" + map.get("origine") + "/" + map.get("refTransQos"), Map.class);
+            log.info("Get transstatu : {}", res);
+            if (res.get("transfertResponseCode").equals("00")) {
+                makedeposite(map);
+                scheduledFuture.cancel(true);
+                oldSessions.remove(map.get("origine"));
+            } else if (new Date().getTime() - this.startDate.getTime() > 5 * 60 * 1000) {
+                log.info("cancel sheduler time out data ==> {} ", map.get("origine"));
+                scheduledFuture.cancel(true);
+            }
+
+        } catch (Exception e) {
+            log.error("Error to get infos credit : {}", e);
+
+        }
+    }
+
+    public void makedeposite(Map map) {
+        Map data = new HashMap();
+        data.put("msisdn", map.get("origine"));
+        data.put("firstname", "padme");
+        data.put("lastname", "Qos");
+        data.put("clientid", getProp("momo_moov_clientId"));
+        data.put("transref", map.get("refTransQos"));
+        data.put("amount", map.get("montoNeto"));
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            Map res = restTemplate.exchange(getProp("momo_moov_deposit"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
+            log.info("response make deposite {} ", res);
+
+        } catch (Exception e) {
+            log.error("Error to sent request payement {} ", e.getMessage());
+        }
     }
 }

@@ -292,9 +292,9 @@ public class ProcessUssd {
         boolean isvalid = false;
         RestTemplate restTemplate = new RestTemplate();
 
-        Map res = restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn(), Map.class);
+        Map res = restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn() + "/"+ user_input, Map.class);
         log.info("Response : {}", res);
-        if (res != null && res.get("") != null) {
+        if (res != null && res.get("telephono") != null) {
             isvalid = true;
         }
 
@@ -472,5 +472,17 @@ public class ProcessUssd {
 
 
         return existe;
+    }
+
+    public void retraitProcess(SubscriberInfo sub) {
+
+        // recuperer le com
+
+    }
+
+    public boolean checkAccounAvailable(SubscriberInfo sub) {
+        boolean isavailable = true;
+
+        return isavailable;
     }
 }
