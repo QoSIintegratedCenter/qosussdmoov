@@ -3,6 +3,7 @@ package com.ks.qosussd.qosussd.padme;
 import com.ks.qosussd.qosussd.core.SubscriberInfo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.TaskScheduler;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
@@ -17,9 +18,7 @@ import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 
 import static com.ks.qosussd.qosussd.core.Constants.*;
-import static com.ks.qosussd.qosussd.core.Utilities.createHeaders;
-import static com.ks.qosussd.qosussd.core.Utilities.getProp;
-import static com.ks.qosussd.qosussd.core.Utilities.randomAlphaNumeric;
+import static com.ks.qosussd.qosussd.core.Utilities.*;
 import static com.ks.qosussd.qosussd.web.ProcessUssd.oldSessions;
 
 @Slf4j
@@ -53,7 +52,7 @@ public class ApiConnect {
         }
     }
 
-    private void postDataToPadmeDatabase(Map map) {
+    public void postDataToPadmeDatabase(Map map) {
         Map transData = new HashMap();
          /* const transData = {
                 'origine': this.config.getDefaultPhoneNumber(),
@@ -70,7 +69,8 @@ public class ApiConnect {
                 'telefono': this.config.getDefaultPhoneNumber(),
                 'typeOperation': typeOperation
         };*/
-        SubscriberInfo customer = oldSessions.get("msisdn");
+        SubscriberInfo customer = oldSessions.get(map.get("msisdn"));
+        log.info("customer {}", customer);
         Map accountInfo = new HashMap();
         String type = "";
         String observation = "";
@@ -89,6 +89,7 @@ public class ApiConnect {
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
         } else if (customer.getSubParams().get("option1").equals(RETRAIT)) {
+            log.info("Retrait Option transation");
             type = "Retrait";
             ref = randomAlphaNumeric();
 
@@ -108,7 +109,7 @@ public class ApiConnect {
         transData.put("codSistema", "AH");
         transData.put("refTransQos", ref);
         transData.put("estPrisEnCompte", 0);
-        transData.put("fecha", LocalDateTime.now());
+        transData.put("fecha", LocalDateTime.now().toString());
         transData.put("tipoTrans", tipoTrans);
         transData.put("monto", customer.getAmount());
         transData.put("frais", 200);
@@ -116,14 +117,22 @@ public class ApiConnect {
         transData.put("typeOperation", type);
         transData.put("telefono", customer.getMsisdn());
         transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
-
-        Map res = restTemplate.postForObject(getProp("transaction"), transData, Map.class);
-        if (res != null) {
-            log.info("transation save successful : {}", res);
-            if (customer.getSubParams().get("option1").equals(RETRAIT)) {
-                startPadmeChecking(transData);
+        System.out.println(transData);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-type", "Application/json");
+        try {
+            Map res = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transData, httpHeaders), Map.class).getBody();
+//                restTemplate.postForObject(getProp("transaction"), transData, Map.class);
+            if (res != null) {
+                log.info("transation save successful : {}", res);
+                if (customer.getSubParams().get("option1").equals(RETRAIT)) {
+                    startPadmeChecking(transData);
+                }
             }
+        } catch (Exception e) {
+            log.error("Error " + e.getMessage());
         }
+
     }
 
     private void startPadmeChecking(Map transData) {
@@ -164,10 +173,11 @@ public class ApiConnect {
     public void checkPadmeStatus(Map map, ScheduledFuture<?> scheduledFuture) {
         RestTemplate restTemplate = new RestTemplate();
         Map res = new HashMap();
-
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-type", "Application/json");
         try {
 
-            res = restTemplate.getForObject(getProp("transaction_padme") + "/" + map.get("origine") + "/" + map.get("refTransQos"), Map.class);
+            res = restTemplate.getForObject(getProp("transaction_padme_status") + "/" + map.get("origine") + "/" + map.get("refTransQos"), Map.class);
             log.info("Get transstatu : {}", res);
             if (res.get("transfertResponseCode").equals("00")) {
                 makedeposite(map);

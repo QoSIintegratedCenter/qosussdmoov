@@ -1,7 +1,6 @@
 package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
-import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 import static com.ks.qosussd.qosussd.core.Constants.*;
@@ -56,12 +54,7 @@ public class UssdRessource {
         if (user_input.isEmpty()) {
             sub = new SubscriberInfo();
             sub.setMsisdn(msisdn);
-            sub.setSc(sc);
-            sub.setLang(lang);
-            sub.setReq_no(req_no);
-            sub.setUserInput(user_input);
-            sub.setSessionId(session_id);
-            sub.setScreenId(screen_id);
+            getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
             sub.setMenuLevel(0);
             activeSessions.put(msisdn, sub);
             log.info("start USSD");
@@ -70,6 +63,7 @@ public class UssdRessource {
             return moovUssdResponse;
         } else {
             sub = activeSessions.get(msisdn);
+            getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
             log.info("sub");
             switch (sub.getMenuLevel()) {
                 case 0:
@@ -159,7 +153,15 @@ public class UssdRessource {
                     if (sub.getSubParams().get("option1") == RETRAIT) {
                         sub.setAmount(new BigDecimal(user_input));
                         sub.setUserInput(user_input);
-                        return processUssd.moovLevel3Retrait(sub);
+                        StringBuilder stringBuilder = new StringBuilder();
+                        stringBuilder.append("Transfert de ")
+                                .append(sub.getAmount())
+                                .append(" fcfa de votre compte ")
+                                .append(sub.getSubParams().get("option2"))
+                                .append(" sur votre compte Momo.\n")
+                                .append("Frais : 200 fcfa ")
+                                .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)));
+                        return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                     } else if (sub.getSubParams().get("option1") == DEPOT) {
                         sub.setAmount(new BigDecimal(user_input));
                         sub.setUserInput(user_input);
@@ -201,21 +203,22 @@ public class UssdRessource {
                     if (sub.getSubParams().get("option1") == DEPOT) {
                         return processUssd.getMoovUssdResponseConfirm(user_input, sub);
                     } else if (sub.getSubParams().get("option1") == RETRAIT) {
-                        processUssd.checkValidUserPadme(user_input, sub);
-                        if (processUssd.checkValidUserPadme(user_input, sub)) {
+//                        processUssd.checkValidUserPadme(user_input, sub);
+                        if (Integer.parseInt(user_input) == 1) {
                             String txt = "";
-                           if(processUssd.checkAccounAvailable(sub)) {
-                               txt ="Votre operation est en cours de validation Merci.";
-                               processUssd.retraitProcess(sub);
-                           }else {
-                               txt= "Solde insuffisant";
-                           }
-                            oldSessions.put(sub.getMsisdn(), sub);
+                            if (processUssd.checkAccounAvailable(sub)) {
+                                oldSessions.put(sub.getMsisdn(), sub);
+                                txt = "Votre operation est en cours de validation Merci.";
+                                processUssd.retraitProcess(sub);
+                            } else {
+                                txt = "Solde insuffisant";
+                            }
+
                             activeSessions.remove(sub.getMsisdn());
                             return processUssd.endOperation(txt);
                         } else {
                             activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Code pin incorrect. Merci de reesayer");
+                            return processUssd.endOperation("Operation annuler avec succee.");
                         }
                     } else if (sub.getSubParams().get("option1").equals(CREDIT)) {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
@@ -243,9 +246,12 @@ public class UssdRessource {
 
                         }
 
+                    } else {
+                        activeSessions.remove(sub.getMsisdn());
+                        return processUssd.endOperation("Mauvaise choix");
                     }
-                    activeSessions.remove(sub.getMsisdn());
-                    return processUssd.endDeposit();
+//                    activeSessions.remove(sub.getMsisdn());
+//                    return processUssd.endDeposit();
                 case 5:
                     log.info("case 5");
                     sub.incrementMenuLevel();
@@ -262,7 +268,7 @@ public class UssdRessource {
                                         .append(" fcfa, frais 200 fcfa Total : ")
                                         .append(sub.getAmount().add(new BigDecimal(200)))
                                         .append(" fcfa.");
-                                ;
+
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
                                     return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
@@ -357,6 +363,15 @@ public class UssdRessource {
         }
 
 
+    }
+
+    private static void getDefaultSub(String sc, String user_input, String lang, String session_id, int req_no, String screen_id, SubscriberInfo sub) {
+        sub.setSc(sc);
+        sub.setLang(lang);
+        sub.setReq_no(req_no);
+        sub.setUserInput(user_input);
+        sub.setSessionId(session_id);
+        sub.setScreenId(screen_id);
     }
 
 

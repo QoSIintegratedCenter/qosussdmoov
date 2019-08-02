@@ -4,8 +4,8 @@ import com.ks.qosussd.qosussd.core.*;
 import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
@@ -134,6 +134,15 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
+    public MoovUssdResponse getMoovUssdResponseEnd(String text) {
+        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
+//        moovUssdResponse.setScreenId(screenId);
+        moovUssdResponse.setText(text);
+        moovUssdResponse.setScreenType("form");
+        moovUssdResponse.setSessionOp(TypeOperation.END.getType());
+        return moovUssdResponse;
+    }
+
     public MoovUssdResponse enterAmount(SubscriberInfo sub) {
         String text = "Veuillez saisir le montant :";
         return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
@@ -170,28 +179,15 @@ public class ProcessUssd {
         moovUssdResponse.setText(stringBuilder.toString());
         moovUssdResponse.setScreenType("menu");
         */
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(stringBuilder.toString(), "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
-        Option option = new Option();
-        option.setChoice(1);
-        option.setValue("Confirmer");
-        Option option1 = new Option();
-        option1.setChoice(2);
-        option1.setValue("Annuler");
-        OptionsType optionsType = new OptionsType();
-        optionsType.getOption().add(option);
-        optionsType.getOption().add(option1);
-        moovUssdResponse.setOptions(optionsType);
-//        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE);
-        return moovUssdResponse;
+        return getUssdResponse(stringBuilder.toString(), sub);
     }
 
     public MoovUssdResponse momoConfirmOption(String text, SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText(text);
-        moovUssdResponse.setScreenType("menu");
+        return getUssdResponse(text, sub);
+    }
+
+    private MoovUssdResponse getUssdResponse(String text, SubscriberInfo sub) {
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Confirmer");
@@ -202,11 +198,11 @@ public class ProcessUssd {
         optionsType.getOption().add(option);
         optionsType.getOption().add(option1);
         moovUssdResponse.setOptions(optionsType);
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         return moovUssdResponse;
     }
 
 
+/*
     public MoovUssdResponse moovLevel3Retrait(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         StringBuilder stringBuilder = new StringBuilder();
@@ -226,6 +222,7 @@ public class ProcessUssd {
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         return moovUssdResponse;
     }
+*/
 
     public MoovUssdResponse padmeConfirmOption(String text, SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -242,28 +239,16 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         moovUssdResponse.setBackLink(1);
         moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
+//        moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Mauvais choix, merci de reessayer");
         moovUssdResponse.setScreenType("form");
         moovUssdResponse.setSessionOp(TypeOperation.END.getType());
         return moovUssdResponse;
     }
 
-    public MoovUssdResponse endDeposit() {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText("Merci de valider momo pour confirmer votre operation");
-        moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.END.getType());
-        return moovUssdResponse;
-    }
 
     public MoovUssdResponse endOperation(String text) {
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.END.getType(), 1);
-
-        return moovUssdResponse;
+        return getMoovUssdResponseEnd(text);
     }
 
     public MoovUssdResponse moovLevel1Retrait(SubscriberInfo sub) {
@@ -292,7 +277,7 @@ public class ProcessUssd {
         boolean isvalid = false;
         RestTemplate restTemplate = new RestTemplate();
 
-        Map res = restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn() + "/"+ user_input, Map.class);
+        Map res = restTemplate.getForObject(getProp("pamde.check_client") + sub.getMsisdn() + "/" + user_input, Map.class);
         log.info("Response : {}", res);
         if (res != null && res.get("telephono") != null) {
             isvalid = true;
@@ -412,7 +397,7 @@ public class ProcessUssd {
                 log.error("Error to sent request payement {} ", e.getMessage());
             }
 
-            return endOperation("Merci de continuer l'operation en validant votre momo");
+            return endOperation("Merci de poursuivre l'operation avec momo");
         } else {
             // add check padme verifie id
             activeSessions.remove(sub.getMsisdn());
@@ -474,9 +459,18 @@ public class ProcessUssd {
         return existe;
     }
 
+    @Async
     public void retraitProcess(SubscriberInfo sub) {
 
         // recuperer le com
+        Map data = new HashMap();
+        data.put("msisdn", sub.getMsisdn());
+        data.put("firstname", "padme");
+        data.put("lastname", "Qos");
+        data.put("clientid", getProp("momo_moov_clientId"));
+        data.put("amount", sub.getAmount().add(new BigDecimal(200)));
+        new ApiConnect().postDataToPadmeDatabase(data);
+
 
     }
 
