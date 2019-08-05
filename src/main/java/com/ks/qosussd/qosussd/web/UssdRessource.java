@@ -227,8 +227,8 @@ public class UssdRessource {
                                 select = Integer.parseInt(user_input);
                                 StringBuilder stringBuilder = new StringBuilder();
                                 stringBuilder.append("Remboursement de ")
-                                        .append("xxxx")
-                                        .append(" fcfa, frais 200 fcfa Total : ");
+                                        .append(sub.getAmount())
+                                        .append(" fcfa, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)));
 
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
