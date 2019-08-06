@@ -391,7 +391,7 @@ public class ProcessUssd {
                 log.info("Option epargne");
                 return endOperation("Operation effectuee avec succee");
             }
-            return endOperation("Operation non effectuee.");
+            return endOperation("Operatio n non effectuee.");
 
         } else {
             // add check padme verifie id
