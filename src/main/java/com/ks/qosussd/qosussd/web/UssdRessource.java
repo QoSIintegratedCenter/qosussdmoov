@@ -232,11 +232,13 @@ public class UssdRessource {
 
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
+                                    sub.getSubParams().put("option4", "momo");
                                     return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                                 }
                                 if (select == 2) {
                                     log.info("Credit rembousement option momo epargne");
-                                    return processUssd.padmeConfirmOption(stringBuilder.toString(), sub);
+                                    sub.getSubParams().put("option4", "padme");
+                                    return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                                 }
                             }
                             if (sub.getSubParams().get("option3").equals(AUTRE_MONTANT)) {
@@ -271,11 +273,13 @@ public class UssdRessource {
 
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
+                                    sub.getSubParams().put("option4", "momo");
                                     return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                                 }
                                 if (select == 2) {
+                                    sub.getSubParams().put("option4", "padme");
                                     log.info("Credit rembousement option momo epargne");
-                                    return processUssd.padmeConfirmOption(stringBuilder.toString(), sub);
+                                    return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                                 }
                             }
 

@@ -364,14 +364,6 @@ public class ProcessUssd {
             activeSessions.remove(sub.getMsisdn());
             oldSessions.put(sub.getMsisdn(), sub);
             Map data = new HashMap();
-               /*const data = {
-                    'msisdn': this.config.getDefaultPhoneNumber(),
-                    'amount': +amont + this.config.getFraisTrans,
-                    'firstname': 'padme',
-                    'lastname': 'Qos',
-                    'clientid': this.config.getclientId,
-                    'transref': this.config.makeid()
-                        };*/
             data.put("msisdn", sub.getMsisdn());
             data.put("firstname", "padme");
             data.put("lastname", "Qos");
@@ -380,24 +372,27 @@ public class ProcessUssd {
             data.put("amount", sub.getAmount().add(new BigDecimal(200)));
             RestTemplate restTemplate = new RestTemplate();
 
+            if (sub.getSubParams().get("option4").equals("momo")) {
+                log.info("Option momo");
+                try {
+//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+                    Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
+                    log.info("response payement {} ", res);
+                    if (res.get("responsecode").equals("01")) {
+                        new ApiConnect().startChecking(data);
+                    }
 
-           /* restTemplate.getInterceptors().add(
-                    new BasicAuthorizationInterceptor(getProp("momo_moov_username"), getProp("momo_moov_password")));*/
-//            HttpEntity<String> request = new HttpEntity<String>(createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password")));
-            try {
-//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
-//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
-                Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
-                log.info("response payement {} ", res);
-                if (res.get("responsecode").equals("01")) {
-                    new ApiConnect().startChecking(data);
+                } catch (Exception e) {
+                    log.error("Error to sent request payement {} ", e.getMessage());
                 }
-
-            } catch (Exception e) {
-                log.error("Error to sent request payement {} ", e.getMessage());
+                return endOperation("Merci de poursuivre l'operation avec momo");
+            } else if (sub.getSubParams().get("option4").equals("padme")) {
+                log.info("Option epargne");
+                return endOperation("Operation effectuee avec succee");
             }
+            return endOperation("Operation non effectuee.");
 
-            return endOperation("Merci de poursuivre l'operation avec momo");
         } else {
             // add check padme verifie id
             activeSessions.remove(sub.getMsisdn());
