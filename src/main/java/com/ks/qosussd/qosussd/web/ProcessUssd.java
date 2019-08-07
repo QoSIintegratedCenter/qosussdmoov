@@ -389,6 +389,9 @@ public class ProcessUssd {
                 return endOperation("Merci de poursuivre l'operation avec momo");
             } else if (sub.getSubParams().get("option4").equals("padme")) {
                 log.info("Option epargne");
+                // verifié le compte
+                Map accoount = new ApiConnect().getAccountInfo("epargne_account" + sub.getMsisdn());
+
                 return endOperation("Operation effectuee avec succee");
             }
             return endOperation("Operatio n non effectuee.");
