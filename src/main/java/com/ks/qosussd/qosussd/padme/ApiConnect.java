@@ -40,7 +40,7 @@ public class ApiConnect {
             try {
                 Map res = restTemplate.exchange(getProp("momo_moov_gettransactionstatus"), HttpMethod.POST, new HttpEntity<Map>(map, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
 
-                if (res.get("responsecode").equals("00")) {
+                if (res.get("responsecode").equals("0")) {
                     log.info("Transaction  for {} response {} ", map.get("msisdn"), res);
                     scheduledFuture.cancel(true);
                     postDataToPadmeDatabase(map);
@@ -116,6 +116,7 @@ public class ApiConnect {
         transData.put("observation", observation);
         transData.put("typeOperation", type);
         transData.put("telefono", customer.getMsisdn());
+        transData.put("terminal", "MOOV_USSD");
         transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
         System.out.println(transData);
         HttpHeaders httpHeaders = new HttpHeaders();
@@ -201,7 +202,7 @@ public class ApiConnect {
         data.put("lastname", "Qos");
         data.put("clientid", getProp("momo_moov_clientId"));
         data.put("transref", map.get("refTransQos"));
-        data.put("amount", map.get("montoNeto"));
+        data.put("amount", map.get("monto"));
         RestTemplate restTemplate = new RestTemplate();
         try {
             Map res = restTemplate.exchange(getProp("momo_moov_deposit"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();

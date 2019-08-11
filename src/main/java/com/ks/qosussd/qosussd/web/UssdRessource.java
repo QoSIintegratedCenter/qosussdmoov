@@ -108,7 +108,8 @@ public class UssdRessource {
                         sub.getSubParams().put("option1", OPERATION_TIERS);
                         return processUssd.startOperationTiers(sub);
                     } else {
-                        return processUssd.moovLevel1Depot(sub);
+                        activeSessions.remove(sub.getMsisdn());
+                        return processUssd.endOperation("Mauvaise choix");
                     }
                 case 2:
                     log.info("choix niveux {} ", sub.getMenuLevel());

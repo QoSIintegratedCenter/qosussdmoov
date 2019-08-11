@@ -13,6 +13,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import static com.ks.qosussd.qosussd.core.Constants.DEPOT;
 import static com.ks.qosussd.qosussd.core.Utilities.*;
 
 @Slf4j
@@ -364,24 +365,16 @@ public class ProcessUssd {
             data.put("lastname", "Qos");
             data.put("clientid", getProp("momo_moov_clientId"));
             data.put("transref", randomAlphaNumeric());
-            data.put("amount", sub.getAmount().add(new BigDecimal(200)));
+            data.put("amount", sub.getAmount());
             RestTemplate restTemplate = new RestTemplate();
+            if (sub.getSubParams().get("option1").equals(DEPOT)) {
+                log.info("Option depot ");
+                return sendMomoRequest(data, restTemplate);
+            }
 
             if (sub.getSubParams().get("option4").equals("momo")) {
                 log.info("Option momo");
-                try {
-//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
-//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
-                    Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
-                    log.info("response payement {} ", res);
-                    if (res.get("responsecode").equals("01")) {
-                        new ApiConnect().startChecking(data);
-                    }
-
-                } catch (Exception e) {
-                    log.error("Error to sent request payement {} ", e.getMessage());
-                }
-                return endOperation("Merci de poursuivre l'operation avec momo");
+                return sendMomoRequest(data, restTemplate);
             } else if (sub.getSubParams().get("option4").equals("padme")) {
                 log.info("Option epargne");
                 // verifié le compte
@@ -396,6 +389,27 @@ public class ProcessUssd {
             activeSessions.remove(sub.getMsisdn());
             return endOperation("Operation annuler avec succes");
         }
+    }
+
+    private MoovUssdResponse sendMomoRequest(Map data, RestTemplate restTemplate) {
+        try {
+//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+//                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
+            Map res = restTemplate.exchange(getProp("momo_moov_requestpayement"), HttpMethod.POST, new HttpEntity<Map>(data, createHeaders(getProp("momo_moov_username"), getProp("momo_moov_password"))), Map.class).getBody();
+            log.info("response payement {} ", res);
+            // responsecode":
+            if (res.get("responsecode").equals("0")) {
+                new ApiConnect().postDataToPadmeDatabase(data);
+            } else {
+                return endOperation("Une erreur s est produite merci de reesayer");
+            }
+
+        } catch (Exception e) {
+            log.error("Error to sent request payement {} ", e.getMessage());
+            activeSessions.remove(data.get("msisdn"));
+            return endOperation("Une erreur s est produite merci de reesayer");
+        }
+        return endOperation("Merci de poursuivre l'operation avec momo");
     }
 
     public String infoCredit(SubscriberInfo sub) {
