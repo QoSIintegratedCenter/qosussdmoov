@@ -91,10 +91,18 @@ public class UssdRessource {
 //                        sub.incrementMenuLevel();
                         return processUssd.moovLevel1Retrait(sub);
                     } else if (select == 3) {
-                        log.info("choix retrait ");
+                        log.info("choix Credit ");
                         sub.getSubParams().put("option1", CREDIT);
 //                        sub.incrementMenuLevel();
                         return processUssd.moovLevel1Credit(sub);
+                    } else if (select == 4) {
+                        log.info("choix transfert ");
+                        sub.getSubParams().put("option1", TRANSFERT);
+                        return processUssd.moovLevel1Transfert(sub);
+                    } else if (select == 5) {
+                        log.info("choix gestion commpte ");
+                        sub.getSubParams().put("option1", GESTION_ACCOUNT);
+                        return processUssd.startManageAccount(sub);
                     } else {
                         return processUssd.moovLevel1Depot(sub);
                     }
@@ -142,6 +150,34 @@ public class UssdRessource {
                         String infoCredi = processUssd.infoCredit(sub);
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.endOperation(infoCredi);
+                    }
+                    if (select == 1 && sub.getSubParams().get("option1") == TRANSFERT) {
+                        log.info("choix Transfert: epargne");
+                        sub.getSubParams().put("option2", EPARGNE);
+
+                        return processUssd.fromAccoundTransfert("evp", sub);
+                    }
+                    if (select == 2 && sub.getSubParams().get("option1") == TRANSFERT) {
+                        log.info("choix transfert: courant  ");
+                        sub.getSubParams().put("option2", COURANT);
+
+                        return processUssd.fromAccoundTransfert("crt", sub);
+                    }
+                    if (select == 3 && sub.getSubParams().get("option1") == TRANSFERT) {
+                        log.info("choix transfert: compte tiers ");
+                        sub.getSubParams().put("option2", COMPTE_TIERS);
+
+                        return processUssd.toAccountTransfertTiers(sub);
+                    }
+                    if (select == 1 && sub.getSubParams().get("option1") == GESTION_ACCOUNT) {
+                        log.info("choix gestion compte: solde ");
+                        sub.getSubParams().put("option2", SOLDE);
+                        return processUssd.soldForAccount(sub);
+                    }
+                    if (select == 2 && sub.getSubParams().get("option1") == GESTION_ACCOUNT) {
+                        log.info("choix gestion compte: Terme condition ");
+                        sub.getSubParams().put("option2", "tc");
+                        return processUssd.termeAndCondition(sub);
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.defaultException();
@@ -194,6 +230,34 @@ public class UssdRessource {
                             return processUssd.endOperation(res);
                         }
 //                        return processUssd.moovLevel1ResumEpargne(sub);
+                    }
+                    if (sub.getSubParams().get("option1") == TRANSFERT) {
+                        if (select == 1 && sub.getSubParams().get("option2").equals(EPARGNE) || sub.getSubParams().get("option2").equals(COURANT)) {
+                            log.info("choix Transfert: choix account");
+                            if (sub.getSubParams().get("option2").equals(EPARGNE)) {
+                                sub.getSubParams().put("option3", COURANT);
+                            } else if (sub.getSubParams().get("option2").equals(COURANT)) {
+                                sub.getSubParams().put("option3", EPARGNE);
+                            } else {
+                                sub.getSubParams().put("option3", EPARGNE);
+                            }
+                            return processUssd.enterAmount(sub);
+                        } else {
+                            return processUssd.fromAccoundTransfert("cmptiers", sub);
+                        }
+
+
+                    }
+                    if ((sub.getSubParams().get("option1").equals(GESTION_ACCOUNT))) {
+                        if ((sub.getSubParams().get("option2").equals(SOLDE))) {
+                            String text = "le solde de votre compte plan tontine est de xxxxxx fcfa";
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation(text);
+                        } else {
+                            String text = "Exemplaire de termes et conditions";
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation(text);
+                        }
                     }
 
 
@@ -248,6 +312,15 @@ public class UssdRessource {
 
                         }
 
+                    } else if (sub.getSubParams().get("option1") == TRANSFERT) {
+                        if (select == 1) {
+                            sub.getSubParams().put("option3", EPARGNE);
+                        } else if (select == 2) {
+                            sub.getSubParams().put("option3", COURANT);
+                        } else {
+                            sub.getSubParams().put("option3", PLAN_TONTINE);
+                        }
+                        return processUssd.enterAmount(sub);
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.endOperation("Mauvaise choix");

@@ -337,13 +337,8 @@ public class ProcessUssd {
 
 
     public MoovUssdResponse debitAccount(SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
-        moovUssdResponse.setScreenType("menu");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Selectionner un numero puis appuyer sur envoyer \n Type de compte", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+
         Option option = new Option();
         option.setChoice(1);
         option.setValue("Momo");
@@ -476,5 +471,89 @@ public class ProcessUssd {
         boolean isavailable = true;
 
         return isavailable;
+    }
+
+    /**
+     * transfert process
+     *
+     * @param sub
+     * @return
+     */
+    public MoovUssdResponse moovLevel1Transfert(SubscriberInfo sub) {
+        String text = "Selectionner un numero puis appuyer sur envoyer \n Transferer sur votre compte :";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        Option option1 = new Option();
+        option1.setChoice(1);
+        option1.setValue("Epargne a vue");
+        Option option2 = new Option();
+        option2.setChoice(2);
+        option2.setValue("Courant");
+        Option option3 = new Option(3, "Compte tiers a PADME");
+        OptionsType optionsType = new OptionsType();
+        optionsType.getOption().add(option1);
+        optionsType.getOption().add(option2);
+        optionsType.addOption(option3);
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse fromAccoundTransfert(String evp, SubscriberInfo sub) {
+        String text = "Selectionner un numero puis appuyer sur envoyer \n A partir de votre compte :";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        Option option1 = new Option();
+        option1.setChoice(1);
+        option1.setValue("Epargne a vue");
+        Option option2 = new Option();
+        option2.setChoice(1);
+        option2.setValue("Courant");
+        OptionsType optionsType = new OptionsType();
+        if (evp.equals("epv")) {
+            optionsType.getOption().add(option2);
+        } else if (evp.equals("crt")) {
+            optionsType.getOption().add(option1);
+        } else {
+            optionsType.getOption().add(option1);
+            optionsType.addOption(new Option(2, "Courant"));
+            optionsType.addOption(new Option(3, "Plan tontine"));
+        }
+        moovUssdResponse.setOptions(optionsType);
+
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse toAccountTransfertTiers(SubscriberInfo sub) {
+        String text = "Veuillez saisir le numero du tiers :";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse startManageAccount(SubscriberInfo sub) {
+        String text = "Selectionner un numero puis appuyer sur envoyer \n Gestion des comptes: ";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        OptionsType optionsType = new OptionsType();
+        optionsType.addOption(new Option(1, "Solde"));
+        optionsType.addOption(new Option(2, "Termes et condition"));
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse soldForAccount(SubscriberInfo sub) {
+        String text = "Selectionner un numero puis appuyer sur envoyer \n Solde: ";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        OptionsType optionsType = new OptionsType();
+        optionsType.addOption(new Option(1, " Compte epargne"));
+        optionsType.addOption(new Option(2, "Compte plan tontine"));
+        optionsType.addOption(new Option(3, "Compte courant"));
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse termeAndCondition(SubscriberInfo sub) {
+        String text = "Les 4 prochaines pages afficheront les termes et les conditions.";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        OptionsType optionsType = new OptionsType();
+        optionsType.addOption(new Option(1, " Suivant"));
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
     }
 }

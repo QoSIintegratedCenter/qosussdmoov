@@ -20,4 +20,12 @@ public class OptionsType {
         }
         return this.option;
     }
+
+    public void setOption(List<Option> option) {
+        this.option = option;
+    }
+
+    public void addOption(Option option) {
+        this.option.add(option);
+    }
 }
