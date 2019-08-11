@@ -25,7 +25,10 @@ public class OptionsType {
         this.option = option;
     }
 
-    public void addOption(Option option) {
-        this.option.add(option);
+    public void addOption(Option option1) {
+        if (option == null) {
+            option = new ArrayList<Option>();
+        }
+        this.option.add(option1);
     }
 }
