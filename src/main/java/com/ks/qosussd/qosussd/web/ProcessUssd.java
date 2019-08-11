@@ -558,4 +558,20 @@ public class ProcessUssd {
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }
+
+    public MoovUssdResponse startOperationTiers(SubscriberInfo sub) {
+        String text = "Operations pour tiers";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        OptionsType optionsType = new OptionsType();
+        optionsType.addOption(new Option(1, "Depot sur compte de tiers"));
+        optionsType.addOption(new Option(2, "Remboursement sur compte de tiers"));
+        moovUssdResponse.setOptions(optionsType);
+        return moovUssdResponse;
+    }
+
+    public MoovUssdResponse tiersAccount(SubscriberInfo sub) {
+        String text = "Veuillez saisir le numero mobile money du tiers";
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        return moovUssdResponse;
+    }
 }

@@ -103,6 +103,10 @@ public class UssdRessource {
                         log.info("choix gestion commpte ");
                         sub.getSubParams().put("option1", GESTION_ACCOUNT);
                         return processUssd.startManageAccount(sub);
+                    } else if (select == 6) {
+                        log.info("choix operation tiers ");
+                        sub.getSubParams().put("option1", OPERATION_TIERS);
+                        return processUssd.startOperationTiers(sub);
                     } else {
                         return processUssd.moovLevel1Depot(sub);
                     }
@@ -178,6 +182,16 @@ public class UssdRessource {
                         log.info("choix gestion compte: Terme condition ");
                         sub.getSubParams().put("option2", "tc");
                         return processUssd.termeAndCondition(sub);
+                    }
+                    if (select == 1 && sub.getSubParams().get("option1") == OPERATION_TIERS) {
+                        log.info("choix operation tiers: depot ");
+                        sub.getSubParams().put("option2", DEPOT_TIERS);
+                        return processUssd.tiersAccount(sub);
+                    }
+                    if (select == 2 && sub.getSubParams().get("option1") == OPERATION_TIERS) {
+                        log.info("choix operation tiers: depot ");
+                        sub.getSubParams().put("option2", REMBOURSEMENT_TIERS);
+                        return processUssd.tiersAccount(sub);
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.defaultException();
@@ -259,6 +273,13 @@ public class UssdRessource {
                             return processUssd.endOperation(text);
                         }
                     }
+                    if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
+                        if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
+                            return processUssd.soldForAccount(sub);
+                        } else {
+                            return processUssd.moovLevel2Credit(sub);
+                        }
+                    }
 
 
                 case 4:
@@ -313,14 +334,34 @@ public class UssdRessource {
                         }
 
                     } else if (sub.getSubParams().get("option1") == TRANSFERT) {
-                        if (select == 1) {
-                            sub.getSubParams().put("option3", EPARGNE);
-                        } else if (select == 2) {
-                            sub.getSubParams().put("option3", COURANT);
-                        } else {
-                            sub.getSubParams().put("option3", PLAN_TONTINE);
-                        }
+                        // selection de compte
+                        getAccountSelectOption(sub);
                         return processUssd.enterAmount(sub);
+                    }
+                    if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
+                        if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
+                            // selection de compte
+                            getAccountSelectOption(sub);
+                            return processUssd.enterAmount(sub);
+                        } else {
+                            if (select == 1) {
+                                log.info("Credit rembousement regulariser");
+                                sub.getSubParams().put("option3", REGURALISER);
+                                sub.setAmount(new BigDecimal((int) sub.getSubParams().get(REGURALISER)));
+                                return processUssd.momoConfirmOption("Autoriser le payement de 100 fcfa. ", sub);
+                            }
+                            if (select == 2) {
+                                sub.getSubParams().put("option3", ECHEANCE);
+                                log.info("Credit rembousement echeance");
+                                sub.setAmount(new BigDecimal((int) sub.getSubParams().get(ECHEANCE)));
+                                return processUssd.momoConfirmOption("Autoriser le payement de 100 fcfa. ", sub);
+                            }
+                            if (select == 3) {
+                                log.info("Credit rembousement autre montant");
+                                sub.getSubParams().put("option3", AUTRE_MONTANT);
+                                return processUssd.moovLevel1DepotCompte(sub);
+                            }
+                        }
                     } else {
                         activeSessions.remove(sub.getMsisdn());
                         return processUssd.endOperation("Mauvaise choix");
@@ -440,6 +481,16 @@ public class UssdRessource {
         }
 
 
+    }
+
+    private void getAccountSelectOption(SubscriberInfo sub) {
+        if (select == 1) {
+            sub.getSubParams().put("option3", EPARGNE);
+        } else if (select == 2) {
+            sub.getSubParams().put("option3", COURANT);
+        } else {
+            sub.getSubParams().put("option3", PLAN_TONTINE);
+        }
     }
 
     private static void getDefaultSub(String sc, String user_input, String lang, String session_id, int req_no, String screen_id, SubscriberInfo sub) {
