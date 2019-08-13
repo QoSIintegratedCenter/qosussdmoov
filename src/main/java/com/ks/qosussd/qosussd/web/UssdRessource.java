@@ -160,13 +160,13 @@ public class UssdRessource {
                         log.info("choix Transfert: epargne");
                         sub.getSubParams().put("option2", EPARGNE);
 
-                        return processUssd.fromAccoundTransfert("evp", sub);
+                        return processUssd.fromAccoundTransfert(EPARGNE, sub);
                     }
                     if (select == 2 && sub.getSubParams().get("option1") == TRANSFERT) {
                         log.info("choix transfert: courant  ");
                         sub.getSubParams().put("option2", COURANT);
 
-                        return processUssd.fromAccoundTransfert("crt", sub);
+                        return processUssd.fromAccoundTransfert(COURANT, sub);
                     }
                     if (select == 3 && sub.getSubParams().get("option1") == TRANSFERT) {
                         log.info("choix transfert: compte tiers ");
@@ -247,19 +247,18 @@ public class UssdRessource {
 //                        return processUssd.moovLevel1ResumEpargne(sub);
                     }
                     if (sub.getSubParams().get("option1") == TRANSFERT) {
-                        if (select == 1 && sub.getSubParams().get("option2").equals(EPARGNE) || sub.getSubParams().get("option2").equals(COURANT)) {
+//                        if (sub.getSubParams().get("option2").equals(EPARGNE) || sub.getSubParams().get("option2").equals(COURANT)) {
                             log.info("choix Transfert: choix account");
-                            if (sub.getSubParams().get("option2").equals(EPARGNE)) {
+                        if (select == 1 && sub.getSubParams().get("option2").equals(EPARGNE)) {
                                 sub.getSubParams().put("option3", COURANT);
-                            } else if (sub.getSubParams().get("option2").equals(COURANT)) {
-                                sub.getSubParams().put("option3", EPARGNE);
-                            } else {
+                        } else if (select == 1 && sub.getSubParams().get("option2").equals(COURANT)) {
                                 sub.getSubParams().put("option3", EPARGNE);
                             }
+                        log.info("option 2 {} , optiion 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
                             return processUssd.enterAmount(sub);
-                        } else {
-                            return processUssd.fromAccoundTransfert("cmptiers", sub);
-                        }
+                        /*} else {
+                            return processUssd.endOperation("Option non disponible");
+                        }*/
 
 
                     }
@@ -336,8 +335,20 @@ public class UssdRessource {
 
                     } else if (sub.getSubParams().get("option1") == TRANSFERT) {
                         // selection de compte
-                        getAccountSelectOption(sub);
-                        return processUssd.enterAmount(sub);
+//                        getAccountSelectOption(sub);
+                        sub.setAmount(new BigDecimal(user_input));
+                        StringBuilder text = new StringBuilder();
+                        log.info("option 2 {} , option 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
+
+                        text.append("Transfert de ")
+                                .append(user_input)
+                                .append(" Fcfa ")
+                                .append("du compte ")
+                                .append(sub.getSubParams().get("option3"))
+                                .append(" pour ")
+                                .append(sub.getSubParams().get("option2"))
+                                .append(" \n Frais : 200").append(" \n Appuyer sur");
+                        return processUssd.momoConfirmOption(text.toString(), sub);
                     }
                     if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
                         if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
@@ -402,6 +413,9 @@ public class UssdRessource {
 
 
                     }
+                    if (sub.getSubParams().get("option1").equals(TRANSFERT)) {
+                        return processUssd.transfertProcess(user_input, sub);
+                    }
                 case 6:
                     log.info("case 6");
                     sub.incrementMenuLevel();
@@ -419,6 +433,7 @@ public class UssdRessource {
 
 
                     }
+
                 case 7:
                     log.info("case 7");
 

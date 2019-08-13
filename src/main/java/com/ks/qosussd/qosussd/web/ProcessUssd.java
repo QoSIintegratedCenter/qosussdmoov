@@ -4,16 +4,18 @@ import com.ks.qosussd.qosussd.core.*;
 import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.ks.qosussd.qosussd.core.Constants.DEPOT;
+import static com.ks.qosussd.qosussd.core.Constants.*;
 import static com.ks.qosussd.qosussd.core.Utilities.*;
 
 @Slf4j
@@ -391,6 +393,94 @@ public class ProcessUssd {
         }
     }
 
+    public MoovUssdResponse transfertProcess(String user_input, SubscriberInfo sub) {
+        int select = Integer.parseInt(user_input);
+        log.info("Transfert process");
+        if (select == 1) {
+            SubscriberInfo customer = sub;
+            activeSessions.remove(sub.getMsisdn());
+            oldSessions.put(sub.getMsisdn(), sub);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.set("Content-type", "Application/json");
+            Map fromAccount = new HashMap();
+            Map toAccount = new HashMap();
+            Map transData = new HashMap();
+            String ref = randomAlphaNumeric();
+            Map transDatato = new HashMap();
+            if (sub.getSubParams().get("option3").equals(EPARGNE)) {
+                log.info("from epargne");
+                fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
+                toAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
+
+
+            } else {
+                log.info("from courant");
+                fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
+                toAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
+
+            }
+            if (fromAccount != null) {
+                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 0) {
+                    LocalDateTime now = LocalDateTime.now();
+                    transData.put("origine", customer.getMsisdn());
+                    transData.put("codCuenta", fromAccount.get("codCuenta"));
+                    transData.put("refTransQos", ref);
+                    transData.put("codSistema", "AH");
+                    transData.put("estPrisEnCompte", 0);
+                    transData.put("fecha", now);
+                    transData.put("tipoTrans", 1);
+                    transData.put("monto", customer.getAmount());
+                    transData.put("frais", 200);
+                    transData.put("observation", "Retrait sur le compte " + sub.getSubParams().get("option3"));
+                    transData.put("typeOperation", "Retrait");
+                    transData.put("telefono", customer.getMsisdn());
+                    transData.put("terminal", "MOOV USSD");
+                    transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
+                    transData.put("origine", customer.getMsisdn());
+
+                    transDatato.put("codCuenta", toAccount.get("codCuenta"));
+                    transDatato.put("codSistema", "AH");
+                    transDatato.put("refTransQos", ref);
+                    transDatato.put("fecha", now);
+                    transDatato.put("estPrisEnCompte", 0);
+                    transDatato.put("tipoTrans", 2);
+                    transDatato.put("monto", customer.getAmount());
+                    transDatato.put("frais", 0);
+                    transDatato.put("observation", "Depot sur le compte " + sub.getSubParams().get("option2"));
+                    transDatato.put("typeOperation", "Depot");
+                    transDatato.put("telefono", customer.getMsisdn());
+                    transDatato.put("terminal", "MOOV USSD");
+                    transDatato.put("montoNeto", customer.getAmount());
+                    RestTemplate restTemplate = new RestTemplate();
+                    RestTemplate restTemplate1 = new RestTemplate();
+                    log.info("from data: {} to data: {}", transData, transDatato);
+                    try {
+                        Map res = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transData, httpHeaders), Map.class).getBody();
+                        Map res2 = restTemplate1.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
+                        log.info("Result from data: {} to data: {}", res, res2);
+                        log.info("Transfert effectué avec succes");
+                        return endOperation("Operatio  effectuee avec succes.");
+
+                    } catch (Exception e) {
+                        log.info("Erreur lors de la transfert " + e);
+                        return endOperation("Un erreur s est produite, reesayer");
+                    }
+                } else endOperation("Solde insufissant");
+
+            } else {
+                return endOperation("Un erreur s est produite, reesayer");
+            }
+
+
+        } else {
+            // add check padme verifie id
+            activeSessions.remove(sub.getMsisdn());
+            return endOperation("Operation annuler avec succes");
+        }
+        return endOperation("Un erreur s est produite, reesayer");
+
+    }
+
     private MoovUssdResponse sendMomoRequest(Map data, RestTemplate restTemplate) {
         try {
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
@@ -523,9 +613,9 @@ public class ProcessUssd {
         option2.setChoice(1);
         option2.setValue("Courant");
         OptionsType optionsType = new OptionsType();
-        if (evp.equals("epv")) {
+        if (evp.equals(EPARGNE)) {
             optionsType.getOption().add(option2);
-        } else if (evp.equals("crt")) {
+        } else if (evp.equals(COURANT)) {
             optionsType.getOption().add(option1);
         } else {
             optionsType.getOption().add(option1);

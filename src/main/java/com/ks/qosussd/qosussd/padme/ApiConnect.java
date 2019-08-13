@@ -78,13 +78,14 @@ public class ApiConnect {
         String ref = "";
         if (customer.getSubParams().get("option1").equals(DEPOT)) {
             type = "Depot";
+            tipoTrans = "2";
             ref = (String) map.get("transref");
             if (customer.getSubParams().get("option2").equals(EPARGNE)) {
-                tipoTrans = "103";
+//                tipoTrans = "103";
                 observation = "Dépôt sur compte épargne";
                 accountInfo = getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
             } else if (customer.getSubParams().get("option2").equals(COURANT)) {
-                tipoTrans = "104";
+//                tipoTrans = "104";
                 observation = "Dépôt sur compte courant";
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
@@ -92,13 +93,13 @@ public class ApiConnect {
             log.info("Retrait Option transation");
             type = "Retrait";
             ref = randomAlphaNumeric();
-
+            tipoTrans = "1";
             if (customer.getSubParams().get("option2").equals(EPARGNE)) {
-                tipoTrans = "103";
+
                 observation = "Rétrait sur compte épargne";
                 accountInfo = getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
             } else if (customer.getSubParams().get("option2").equals(COURANT)) {
-                tipoTrans = "104";
+//                tipoTrans = "104";
                 observation = "Rétrait sur compte courant";
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
@@ -116,7 +117,7 @@ public class ApiConnect {
         transData.put("observation", observation);
         transData.put("typeOperation", type);
         transData.put("telefono", customer.getMsisdn());
-        transData.put("terminal", "MOOV_USSD");
+        transData.put("terminal", "MOOV USSD");
         transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
         System.out.println(transData);
         HttpHeaders httpHeaders = new HttpHeaders();
