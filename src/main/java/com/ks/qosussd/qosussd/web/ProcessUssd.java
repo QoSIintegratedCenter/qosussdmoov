@@ -427,7 +427,7 @@ public class ProcessUssd {
                     transData.put("refTransQos", ref);
                     transData.put("codSistema", "AH");
                     transData.put("estPrisEnCompte", 0);
-                    transData.put("fecha", now);
+                    transData.put("fecha", now.toString());
                     transData.put("tipoTrans", 1);
                     transData.put("monto", customer.getAmount());
                     transData.put("frais", 200);
@@ -441,7 +441,7 @@ public class ProcessUssd {
                     transDatato.put("codCuenta", toAccount.get("codCuenta"));
                     transDatato.put("codSistema", "AH");
                     transDatato.put("refTransQos", ref);
-                    transDatato.put("fecha", now);
+                    transDatato.put("fecha", now.toString());
                     transDatato.put("estPrisEnCompte", 0);
                     transDatato.put("tipoTrans", 2);
                     transDatato.put("monto", customer.getAmount());
@@ -452,12 +452,12 @@ public class ProcessUssd {
                     transDatato.put("terminal", "MOOV USSD");
                     transDatato.put("montoNeto", customer.getAmount());
                     RestTemplate restTemplate = new RestTemplate();
-                    RestTemplate restTemplate1 = new RestTemplate();
+//                    RestTemplate restTemplate1 = new RestTemplate();
                     log.info("from data: {} to data: {}", transData, transDatato);
                     try {
                         Map res = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transData, httpHeaders), Map.class).getBody();
-                        Map res2 = restTemplate1.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
-                        log.info("Result from data: {} to data: {}", res, res2);
+                        Map res2 = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
+//                        log.info("Result from data: {} to data: {}", res, res2);
                         log.info("Transfert effectué avec succes");
                         return endOperation("Operatio  effectuee avec succes.");
 
