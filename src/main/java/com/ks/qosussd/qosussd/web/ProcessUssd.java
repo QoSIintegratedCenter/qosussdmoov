@@ -371,12 +371,15 @@ public class ProcessUssd {
             RestTemplate restTemplate = new RestTemplate();
             if (sub.getSubParams().get("option1").equals(DEPOT)) {
                 log.info("Option depot ");
-                return sendMomoRequest(data, restTemplate);
+                sendMomoRequest(data);
+                return endOperation("Merci de poursuivre l'operation avec momo");
             }
 
             if (sub.getSubParams().get("option4").equals("momo")) {
                 log.info("Option momo");
-                return sendMomoRequest(data, restTemplate);
+
+                sendMomoRequest(data);
+                return endOperation("Merci de poursuivre l'operation avec momo");
             } else if (sub.getSubParams().get("option4").equals("padme")) {
                 log.info("Option epargne");
                 // verifié le compte
@@ -384,7 +387,7 @@ public class ProcessUssd {
 
                 return endOperation("Operation effectuee avec succee");
             }
-            return endOperation("Operatio n non effectuee.");
+            return endOperation("Operation non effectuee.");
 
         } else {
             // add check padme verifie id
@@ -481,7 +484,8 @@ public class ProcessUssd {
 
     }
 
-    private MoovUssdResponse sendMomoRequest(Map data, RestTemplate restTemplate) {
+    private void sendMomoRequest(Map data) {
+        RestTemplate restTemplate = new RestTemplate();
         try {
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
@@ -490,16 +494,18 @@ public class ProcessUssd {
             // responsecode":
             if (res.get("responsecode").equals("0")) {
                 new ApiConnect().postDataToPadmeDatabase(data);
+                log.info("Depot  success");
             } else {
-                return endOperation("Une erreur s est produite merci de reesayer");
+                log.info("Une erreur s est produite merci de reesayer");
+//                return endOperation();
             }
 
         } catch (Exception e) {
             log.error("Error to sent request payement {} ", e.getMessage());
             activeSessions.remove(data.get("msisdn"));
-            return endOperation("Une erreur s est produite merci de reesayer");
+//            return endOperation("Une erreur s est produite merci de reesayer");
         }
-        return endOperation("Merci de poursuivre l'operation avec momo");
+//        return endOperation("Merci de poursuivre l'operation avec momo");
     }
 
     public String infoCredit(SubscriberInfo sub) {

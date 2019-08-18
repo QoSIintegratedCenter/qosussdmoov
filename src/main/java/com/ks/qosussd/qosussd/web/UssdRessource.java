@@ -61,6 +61,14 @@ public class UssdRessource {
             moovUssdResponse = processUssd.welcomLevel(sub);
             log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
+        }
+        if (user_input.equals("00")) {
+            sub = activeSessions.get(msisdn);
+            log.info("go back now level {}", sub.getMenuLevel());
+            sub.setMenuLevel(sub.getMenuLevel() - 1);
+            log.info("go back go level {}", sub.getMenuLevel());
+
+            return startMoovUssd(sc, msisdn, sub.getUserInput(), lang, session_id, req_no, screen_id);
         } else {
             sub = activeSessions.get(msisdn);
             getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
@@ -247,15 +255,17 @@ public class UssdRessource {
 //                        return processUssd.moovLevel1ResumEpargne(sub);
                     }
                     if (sub.getSubParams().get("option1") == TRANSFERT) {
+                        select = Integer.parseInt(user_input);
 //                        if (sub.getSubParams().get("option2").equals(EPARGNE) || sub.getSubParams().get("option2").equals(COURANT)) {
-                            log.info("choix Transfert: choix account");
-                        if (select == 1 && sub.getSubParams().get("option2").equals(EPARGNE)) {
-                                sub.getSubParams().put("option3", COURANT);
-                        } else if (select == 1 && sub.getSubParams().get("option2").equals(COURANT)) {
-                                sub.getSubParams().put("option3", EPARGNE);
-                            }
+                        log.info("choix Transfert: choix account");
+                        if (select == 1 && sub.getSubParams().get("option2") == EPARGNE) {
+                            sub.getSubParams().put("option3", COURANT);
+                        } else if (select == 1 && sub.getSubParams().get("option2") == COURANT) {
+                            System.out.println("put option 3");
+                            sub.getSubParams().put("option3", EPARGNE);
+                        }
                         log.info("option 2 {} , optiion 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
-                            return processUssd.enterAmount(sub);
+                        return processUssd.enterAmount(sub);
                         /*} else {
                             return processUssd.endOperation("Option non disponible");
                         }*/
