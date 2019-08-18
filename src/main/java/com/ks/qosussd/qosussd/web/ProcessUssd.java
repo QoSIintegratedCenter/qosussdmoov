@@ -369,8 +369,8 @@ public class ProcessUssd {
             data.put("transref", randomAlphaNumeric());
             data.put("amount", sub.getAmount());
             RestTemplate restTemplate = new RestTemplate();
-            if (sub.getSubParams().get("option1").equals(DEPOT)) {
-                log.info("Option depot ");
+            if (sub.getSubParams().get("option1").equals(DEPOT) || sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
+                log.info("Option depot  ou depot tiers");
                 sendMomoRequest(data);
                 return endOperation("Merci de poursuivre l'operation avec momo");
             }
@@ -525,10 +525,14 @@ public class ProcessUssd {
 
         RestTemplate restTemplate = new RestTemplate();
         Map res = new HashMap();
+        String phoneNumber = sub.getMsisdn();
+        if (sub.getSubParams().get("option1").equals(OPERATION_TIERS)) {
+            phoneNumber = sub.getSubParams().get("PHONE_TIERS").toString();
+        }
 
         try {
 //            System.out.println(getProp("pamde.check_client") + phoneNumber);
-            res = restTemplate.getForObject(getProp("infocredit") + sub.getMsisdn(), Map.class);
+            res = restTemplate.getForObject(getProp("infocredit") + phoneNumber, Map.class);
             log.info("Get credit infos : {}", res);
             return res;
         } catch (Exception e) {
@@ -649,8 +653,12 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
-    public MoovUssdResponse soldForAccount(SubscriberInfo sub) {
-        String text = "Selectionner le compte: ";
+    public MoovUssdResponse soldForAccount(SubscriberInfo sub, String type, Map map) {
+        String text = "Selectionner le compte :";
+        if (type.equals("dp")) {
+            text = "Selectionner le compte de " + map.get("nombreCompleto") + " sur lequel vous voulez effectue le depot";
+        }
+
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
         optionsType.addOption(new Option(1, " Compte epargne"));
@@ -680,8 +688,9 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse tiersAccount(SubscriberInfo sub) {
-        String text = "Veuillez saisir le numero mobile money du tiers";
+        String text = "Veuillez saisir le numero du tiers";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         return moovUssdResponse;
     }
+
 }

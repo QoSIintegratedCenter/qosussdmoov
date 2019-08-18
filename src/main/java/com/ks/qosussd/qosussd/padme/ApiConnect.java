@@ -89,6 +89,19 @@ public class ApiConnect {
                 observation = "Dépôt sur compte courant";
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
+        } else if (customer.getSubParams().get("option1").equals(DEPOT_TIERS)) {
+            type = "Depot";
+            tipoTrans = "2";
+            ref = (String) map.get("transref");
+            if (customer.getSubParams().get("option2").equals(EPARGNE)) {
+//                tipoTrans = "103";
+                observation = "Dépôt sur compte épargne de tiers";
+                accountInfo = getAccountInfo(getProp("epargne_account") + customer.getSubParams().get("PHONE_TIERS"));
+            } else if (customer.getSubParams().get("option2").equals(COURANT)) {
+//                tipoTrans = "104";
+                observation = "Dépôt sur compte courant de tiers";
+                accountInfo = getAccountInfo(getProp("operation_account") + customer.getSubParams().get("PHONE_TIERS"));
+            }
         } else if (customer.getSubParams().get("option1").equals(RETRAIT)) {
             log.info("Retrait Option transation");
             type = "Retrait";
