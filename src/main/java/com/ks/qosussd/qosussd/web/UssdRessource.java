@@ -1,6 +1,7 @@
 package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
+import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,9 +10,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static com.ks.qosussd.qosussd.core.Constants.*;
+import static com.ks.qosussd.qosussd.core.Utilities.getProp;
 import static com.ks.qosussd.qosussd.web.ProcessUssd.activeSessions;
 import static com.ks.qosussd.qosussd.web.ProcessUssd.oldSessions;
 
@@ -50,6 +54,7 @@ public class UssdRessource {
     @GetMapping("padmeussd")
     public MoovUssdResponse startMoovUssd(@RequestParam String sc, @RequestParam(required = true) String msisdn, @RequestParam(required = false) String user_input, @RequestParam(required = false) String lang, @RequestParam String session_id, @RequestParam(required = false) int req_no, @RequestParam(required = false) String screen_id) {
         MoovUssdResponse moovUssdResponse = null;
+//        log.info("userInput {}", user_input);
         SubscriberInfo sub = null;
         if (user_input.isEmpty()) {
             sub = new SubscriberInfo();
@@ -61,12 +66,12 @@ public class UssdRessource {
             moovUssdResponse = processUssd.welcomLevel(sub);
             log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
-        }
-        if (user_input.equals("00")) {
+        } else if (user_input.equals("00")) {
             sub = activeSessions.get(msisdn);
             log.info("go back now level {}", sub.getMenuLevel());
             sub.setMenuLevel(sub.getMenuLevel() - 1);
             log.info("go back go level {}", sub.getMenuLevel());
+            activeSessions.put(msisdn, sub);
 
             return startMoovUssd(sc, msisdn, sub.getUserInput(), lang, session_id, req_no, screen_id);
         } else {
@@ -206,8 +211,7 @@ public class UssdRessource {
                         return processUssd.defaultException();
                     }
                 case 3:
-                    log.info("Amount: {} ", user_input);
-
+//                    log.info("Amount: {} ", user_input);
                     sub.incrementMenuLevel();
                     if (sub.getSubParams().get("option1") == RETRAIT) {
                         sub.setAmount(new BigDecimal(user_input));
@@ -274,7 +278,17 @@ public class UssdRessource {
                     }
                     if ((sub.getSubParams().get("option1").equals(GESTION_ACCOUNT))) {
                         if ((sub.getSubParams().get("option2").equals(SOLDE))) {
-                            String text = "le solde de votre compte plan tontine est de xxxxxx fcfa";
+                            select = Integer.parseInt(user_input);
+                            Map dataSolode = new HashMap();
+                            getAccountSelectOption(sub);
+                            if (sub.getSubParams().get("option3").equals(EPARGNE)) {
+                                dataSolode = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
+                            } else {
+                                dataSolode = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+
+                            }
+
+                            String text = "le solde de votre compte " + sub.getSubParams().get("option3") + " est de " + dataSolode.get("saldoCuenta") + " fcfa";
                             activeSessions.remove(sub.getMsisdn());
                             return processUssd.endOperation(text);
                         } else {

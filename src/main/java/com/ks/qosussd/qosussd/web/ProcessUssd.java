@@ -640,7 +640,7 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse startManageAccount(SubscriberInfo sub) {
-        String text = "Selectionner un numero puis appuyer sur envoyer \n Gestion des comptes: ";
+        String text = "Gestion des comptes: ";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
         optionsType.addOption(new Option(1, "Solde"));
@@ -650,7 +650,7 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse soldForAccount(SubscriberInfo sub) {
-        String text = "Selectionner un numero puis appuyer sur envoyer \n Solde: ";
+        String text = "Selectionner le compte: ";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
         optionsType.addOption(new Option(1, " Compte epargne"));
