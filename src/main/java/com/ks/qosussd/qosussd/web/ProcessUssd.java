@@ -542,10 +542,10 @@ public class ProcessUssd {
     }
 
     boolean checkNumberExist(String phoneNumber) {
-        boolean existe = true;
+        boolean existe = false;
         RestTemplate restTemplate = new RestTemplate();
 
-/* // comment for test
+        // comment for test
 
         try {
             System.out.println(getProp("pamde.check_client") + phoneNumber);
@@ -563,7 +563,6 @@ public class ProcessUssd {
             existe = false;
         }
 
-*/
 
         return existe;
     }
