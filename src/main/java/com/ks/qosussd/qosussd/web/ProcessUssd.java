@@ -392,66 +392,7 @@ public class ProcessUssd {
                 return endOperation("Merci de poursuivre l'operation avec momo");
             } else if (sub.getSubParams().get("option4").equals("padme")) {
                 log.info("Option epargne");
-                // verifié le compte
-                HttpHeaders httpHeaders = new HttpHeaders();
-                httpHeaders.set("Content-type", "Application/json");
-                Map accoount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
-                Map toaccoount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
-                if (new BigDecimal(accoount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 0) {
-                    LocalDateTime now = LocalDateTime.now();
-                    Map transData = new HashMap();
-                    Map transDatato = new HashMap();
-                    String ref = randomAlphaNumeric();
-                    transData.put("origine", sub.getMsisdn());
-                    transData.put("codCuenta", accoount.get("codCuenta"));
-                    transData.put("refTransQos", ref);
-                    transData.put("codSistema", "AH");
-                    transData.put("estPrisEnCompte", 0);
-                    transData.put("fecha", now.toString());
-                    transData.put("tipoTrans", 1);
-                    transData.put("monto", sub.getAmount());
-                    transData.put("frais", 200);
-                    transData.put("observation", "Retrait pour rembourser de credit");
-                    transData.put("typeOperation", "Retrait");
-                    transData.put("telefono", sub.getMsisdn());
-                    transData.put("terminal", "MOOV USSD");
-                    transData.put("montoNeto", sub.getAmount().add(new BigDecimal(200)));
-                    transData.put("origine", sub.getMsisdn());
-
-                    transDatato.put("codCuenta", toaccoount.get("codCuenta"));
-                    transDatato.put("codSistema", "AH");
-                    transDatato.put("refTransQos", ref);
-                    transDatato.put("fecha", now.toString());
-                    transDatato.put("estPrisEnCompte", 0);
-                    transDatato.put("tipoTrans", 2);
-                    transDatato.put("monto", sub.getAmount());
-                    transDatato.put("frais", 0);
-                    transDatato.put("observation", "Depot pour rembourser de credit");
-                    transDatato.put("typeOperation", "Depot");
-                    transDatato.put("telefono", sub.getMsisdn());
-                    transDatato.put("terminal", "MOOV USSD");
-                    transDatato.put("montoNeto", sub.getAmount());
-//                    RestTemplate restTemplate = new RestTemplate();
-//                    RestTemplate restTemplate1 = new RestTemplate();
-                    log.info("from data: {} to data: {}", transData, transDatato);
-                    try {
-                        Map res = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transData, httpHeaders), Map.class).getBody();
-                        Map res2 = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
-//                        log.info("Result from data: {} to data: {}", res, res2);
-                        log.info("Transfert effectué avec succes");
-                        activeSessions.remove(sub.getMsisdn());
-                        return endOperation("Operatio  effectuee avec succes.");
-
-                    } catch (Exception e) {
-                        log.info("Erreur lors de la transfert " + e);
-                        activeSessions.remove(sub.getMsisdn());
-                        return endOperation("Un erreur s est produite, reesayer");
-                    }
-
-                } else {
-                    activeSessions.remove(sub.getMsisdn());
-                    return endOperation("Solde insufissant.");
-                }
+                return remboursementParEpargne(sub);
 
 //                    return endOperation("Operation effectuee avec succee");
             }
@@ -462,6 +403,70 @@ public class ProcessUssd {
             activeSessions.remove(sub.getMsisdn());
             return endOperation("Operation annuler avec succes");
         }
+    }
+
+    public MoovUssdResponse remboursementParEpargne(SubscriberInfo sub) {
+        // verifié le compte
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-type", "Application/json");
+        Map accoount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
+        Map toaccoount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+        if (new BigDecimal(accoount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 0) {
+            LocalDateTime now = LocalDateTime.now();
+            Map transData = new HashMap();
+            Map transDatato = new HashMap();
+            String ref = randomAlphaNumeric();
+            transData.put("origine", sub.getMsisdn());
+            transData.put("codCuenta", accoount.get("codCuenta"));
+            transData.put("refTransQos", ref);
+            transData.put("codSistema", "AH");
+            transData.put("estPrisEnCompte", 0);
+            transData.put("fecha", now.toString());
+            transData.put("tipoTrans", 1);
+            transData.put("monto", sub.getAmount());
+            transData.put("frais", 200);
+            transData.put("observation", "Retrait pour rembourser de credit");
+            transData.put("typeOperation", "Retrait");
+            transData.put("telefono", sub.getMsisdn());
+            transData.put("terminal", "MOOV USSD");
+            transData.put("montoNeto", sub.getAmount().add(new BigDecimal(200)));
+            transData.put("origine", sub.getMsisdn());
+
+            transDatato.put("codCuenta", toaccoount.get("codCuenta"));
+            transDatato.put("codSistema", "AH");
+            transDatato.put("refTransQos", ref);
+            transDatato.put("fecha", now.toString());
+            transDatato.put("estPrisEnCompte", 0);
+            transDatato.put("tipoTrans", 2);
+            transDatato.put("monto", sub.getAmount());
+            transDatato.put("frais", 0);
+            transDatato.put("observation", "Depot pour rembourser de credit");
+            transDatato.put("typeOperation", "Depot");
+            transDatato.put("telefono", sub.getMsisdn());
+            transDatato.put("terminal", "MOOV USSD");
+            transDatato.put("montoNeto", sub.getAmount());
+            RestTemplate restTemplate = new RestTemplate();
+//                    RestTemplate restTemplate1 = new RestTemplate();
+            log.info("from data: {} to data: {}", transData, transDatato);
+            try {
+                Map res = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transData, httpHeaders), Map.class).getBody();
+                Map res2 = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
+//                        log.info("Result from data: {} to data: {}", res, res2);
+                log.info("Transfert effectué avec succes");
+                activeSessions.remove(sub.getMsisdn());
+                return endOperation("Operatio  effectuee avec succes.");
+
+            } catch (Exception e) {
+                log.info("Erreur lors de la transfert " + e);
+                activeSessions.remove(sub.getMsisdn());
+                return endOperation("Un erreur s est produite, reesayer");
+            }
+
+        } else {
+            activeSessions.remove(sub.getMsisdn());
+            return endOperation("Solde insufissant.");
+        }
+
     }
 
     public MoovUssdResponse transfertProcess(String user_input, SubscriberInfo sub) {
