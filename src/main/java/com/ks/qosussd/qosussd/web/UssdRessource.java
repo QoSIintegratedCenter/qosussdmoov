@@ -3,11 +3,11 @@ package com.ks.qosussd.qosussd.web;
 import com.ks.qosussd.qosussd.core.*;
 import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -589,5 +589,12 @@ public class UssdRessource {
     }
 
 
-//    MoovUssdResponse buildResponseDefault(String type, String text, )
+    //    MoovUssdResponse buildResponseDefault(String type, String text, )
+    @RequestMapping(value = "/logfile/download", method = RequestMethod.GET)
+    @ResponseBody
+    public FileSystemResource downloadFile() {
+//        Product product = productRepo.findOne(id);
+        return new FileSystemResource(new File(getProp("logging.file")));
+    }
+
 }

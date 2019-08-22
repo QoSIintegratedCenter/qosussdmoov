@@ -6,6 +6,7 @@ import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ConcurrentTaskScheduler;
 import org.springframework.web.client.RestTemplate;
 
@@ -141,7 +142,8 @@ public class ApiConnect {
             if (res != null) {
                 log.info("transation save successful : {}", res);
                 if (customer.getSubParams().get("option1").equals(RETRAIT)) {
-                    startPadmeChecking(transData);
+                    new Thread(() -> startPadmeChecking(transData)).start();
+//                    startPadmeChecking(transData);
                 }
             }
         } catch (Exception e) {
@@ -150,7 +152,8 @@ public class ApiConnect {
 
     }
 
-    private void startPadmeChecking(Map transData) {
+    @Async("threadPoolTaskExecutor")
+    void startPadmeChecking(Map transData) {
         this.startDate = new Date();
         Duration duration = Duration.ofMillis(5000L);
         log.info("starDate padme {}", this.startDate);

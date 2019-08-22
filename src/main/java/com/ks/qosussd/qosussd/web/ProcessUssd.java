@@ -128,8 +128,8 @@ public class ProcessUssd {
 
     private MoovUssdResponse getMoovUssdResponse(String text, String type, String typeOperation, int screenId) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(screenId);
         moovUssdResponse.setText(text);
         moovUssdResponse.setScreenType(type);
@@ -291,8 +291,8 @@ public class ProcessUssd {
 
     public MoovUssdResponse moovLevel1Credit(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
@@ -355,7 +355,6 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
-
     public MoovUssdResponse getMoovUssdResponseConfirm(String user_input, SubscriberInfo sub) {
         int select = Integer.parseInt(user_input);
         if (select == 1) {
@@ -371,14 +370,22 @@ public class ProcessUssd {
             RestTemplate restTemplate = new RestTemplate();
             if (sub.getSubParams().get("option1").equals(DEPOT) || sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
                 log.info("Option depot  ou depot tiers");
-                sendMomoRequest(data);
+//                sendMomoRequest(data);
+                new Thread(() -> {
+                    log.info("deposite in backgroud deposite");
+                    sendMomoRequest(data);
+                }).start();
+
                 return endOperation("Merci de poursuivre l'operation avec momo");
             }
 
             if (sub.getSubParams().get("option4").equals("momo")) {
                 log.info("Option momo");
-
-                sendMomoRequest(data);
+                new Thread(() -> {
+                    log.info("deposite in backgroud");
+                    sendMomoRequest(data);
+                }).start();
+//                sendMomoRequest(data);
                 return endOperation("Merci de poursuivre l'operation avec momo");
             } else if (sub.getSubParams().get("option4").equals("padme")) {
                 log.info("Option epargne");
@@ -484,8 +491,10 @@ public class ProcessUssd {
 
     }
 
-    private void sendMomoRequest(Map data) {
+    @Async("threadPoolTaskExecutor")
+    void sendMomoRequest(Map data) {
         RestTemplate restTemplate = new RestTemplate();
+        log.info("call send request");
         try {
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
 //                Map res = restTemplate.postForObject(getProp("momo_moov_requestpayement"), data, Map.class);
