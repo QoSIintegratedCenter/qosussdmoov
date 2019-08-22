@@ -10,7 +10,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.client.RestTemplate;
 
 import java.math.BigDecimal;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +25,7 @@ public class ProcessUssd {
 
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String, SubscriberInfo> oldSessions = new ConcurrentHashMap<>();
-
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm");
     MoovUssdResponse welcomLevel(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         moovUssdResponse.setText("Sélectionner un numéro puis appuyer sur envoyer");
@@ -589,13 +591,16 @@ public class ProcessUssd {
             return "Une erreur s'est produite ou vous n'avez pas de credi en cours.";
         }
         StringBuilder builder = new StringBuilder();
+        Timestamp timestamp = new Timestamp(new Long(infoCredit.get("dateDerniereEcheance").toString()));
+
         builder.append("Etat du crédit :\n" +
                 "\n" +
                 "Montant du crédit : " + infoCredit.get("montoDesembolso") + "\n" +
                 "Montant échéance : " + infoCredit.get("montantEcheance") + "\n" +
                 "Montant impayé : " + infoCredit.get("montantImpaye") + "\n" +
                 "Reste à solder : " + infoCredit.get("restePourSolde") + "\n" +
-                "Date de la dernière échance : " + infoCredit.get("dateDerniereEcheance"));
+                "Date de la dernière échance : " + timestamp.toLocalDateTime().format(dateTimeFormatter));
+//                "Date de la dernière échance : "+ new Date(infoCredit.get("dateDerniereEcheance").toString()));
         return builder.toString();
     }
 
@@ -770,4 +775,40 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
+    @Async
+    public void astkLoan(SubscriberInfo sub) {
+        log.info("Demande de credit");
+        Map data = new HashMap();
+        Map fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+       /* {
+            "CodSolicitud":"SOL-099-généré un nombre aléatoire de 3 caractères",
+                "FechaSolicitud":"Date de la demande",
+                "MontoSolicitado":"Montant solicité",
+                "Telefono":"Numéro de téléphone",
+                "CodSistema":"AH",
+                "Observacion":"",
+                "CodCuenta":"Numéro du compte courant",
+                "RefTransQos":"Référence de la transaction sur 20 caractères",
+                "Terminal":""
+        }
+        */
+        data.put("CodSolicitud", "SOL-099-" + randomAlphaNumeric3());
+        data.put("FechaSolicitud", LocalDateTime.now().toString());
+        data.put("MontoSolicitado", sub.getAmount());
+        data.put("CodSistema", "AH");
+        data.put("Observacion", "Demande de credit");
+        data.put("CodCuenta", fromAccount.get("codCuenta"));
+        data.put("RefTransQos", randomAlphaNumeric());
+        data.put("Terminal", "MOOV USSD");
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.set("Content-type", "Application/json");
+        RestTemplate restTemplate = new RestTemplate();
+        try {
+            Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();
+            log.info("demande succes");
+        } catch (Exception e) {
+            log.error("" + e);
+        }
+
+    }
 }

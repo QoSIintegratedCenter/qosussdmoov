@@ -253,6 +253,10 @@ public class UssdRessource {
                         if ((sub.getSubParams().get("option2").equals(DEMANDE_CREDIT))) {
                             String res = "Nous accusons reception de votre demande de credit. Un agent de PADME vous contactera sous peu. \n" +
                                     "Nous vous remercions d’avoir utiliser le service push-pull de PADME.";
+                            sub.setAmount(new BigDecimal(user_input));
+                            SubscriberInfo finalSub = sub;
+                            new Thread(() -> processUssd.astkLoan(finalSub)).start();
+                            ;
                             activeSessions.remove(sub.getMsisdn());
                             return processUssd.endOperation(res);
                         }
