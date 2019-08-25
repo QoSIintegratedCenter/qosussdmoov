@@ -143,13 +143,14 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
 //        moovUssdResponse.setScreenId(screenId);
         moovUssdResponse.setText(text);
+        moovUssdResponse.setBackLink(0);
         moovUssdResponse.setScreenType("form");
         moovUssdResponse.setSessionOp(TypeOperation.END.getType());
         return moovUssdResponse;
     }
 
-    public MoovUssdResponse enterAmount(SubscriberInfo sub) {
-        String text = "Veuillez saisir le montant :";
+    public MoovUssdResponse enterAmount(SubscriberInfo sub, String text) {
+
         return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
 
     }
@@ -158,7 +159,7 @@ public class ProcessUssd {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Transfert de ")
                 .append(sub.getAmount())
-                .append(" fcfa de votre compte MoMo sur votre compte ")
+                .append(" FCFA de votre compte MoMo sur votre compte ")
                 .append(sub.getSubParams().get("option2"))
                 .append(", ")
                 .append("Frais : 200 fcfa, ")
@@ -259,10 +260,10 @@ public class ProcessUssd {
     public MoovUssdResponse moovLevel1Retrait(SubscriberInfo sub) {
 
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-//        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
-        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+        moovUssdResponse.setText("Votre choix");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
@@ -321,20 +322,20 @@ public class ProcessUssd {
     public MoovUssdResponse moovLevel2Credit(SubscriberInfo sub) {
         Map infoCredit = getInfoCredit(sub);
         if (infoCredit == null || infoCredit.isEmpty()) {
-            return endOperation("Une erreur s'est produite ou vous n'avez pas de credi en cours.");
+            return endOperation("Désolé ! Vous n'avez pas de crédit en cours");
         }
         Option option = new Option();
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Type de remboursement", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Votre choix", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         option.setChoice(1);
         sub.getSubParams().put(Constants.REGURALISER, infoCredit.get("restePourSolde"));
         sub.getSubParams().put(Constants.ECHEANCE, infoCredit.get("montantEcheance"));
-        option.setValue("Montant a payer pour regulariser :" + infoCredit.get("restePourSolde") + " fcfa");
+        option.setValue("Montant à payer pour régulariser : " + infoCredit.get("restePourSolde") + " FCFA");
         Option option3 = new Option();
         option3.setChoice(2);
-        option3.setValue("Prochaine echeance  " + infoCredit.get("montantEcheance") + " fcfa ");
+        option3.setValue("Prochaine échéance : " + infoCredit.get("montantEcheance") + " FCFA ");
         Option option4 = new Option();
         option4.setChoice(3);
-        option4.setValue("Autre montant a payer");
+        option4.setValue("Autre montant à payer");
         OptionsType optionsTypeC = new OptionsType();
         optionsTypeC.getOption().add(option);
         optionsTypeC.getOption().add(option3);
@@ -345,7 +346,7 @@ public class ProcessUssd {
 
 
     public MoovUssdResponse debitAccount(SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Type de compte", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Remboursé de votre compte :", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
 
         Option option = new Option();
         option.setChoice(1);
@@ -588,7 +589,7 @@ public class ProcessUssd {
     public String infoCredit(SubscriberInfo sub) {
         Map infoCredit = getInfoCredit(sub);
         if (infoCredit == null || infoCredit.isEmpty()) {
-            return "Une erreur s'est produite ou vous n'avez pas de credi en cours.";
+            return "Désolé ! Vous n'avez pas de crédit en cours";
         }
         StringBuilder builder = new StringBuilder();
         Timestamp timestamp = new Timestamp(new Long(infoCredit.get("dateDerniereEcheance").toString()));
@@ -665,8 +666,30 @@ public class ProcessUssd {
 
     }
 
+    // verification de disponibilité
     public boolean checkAccounAvailable(SubscriberInfo sub) {
-        boolean isavailable = true;
+        boolean isavailable = false;
+        Map fromAccount = null;
+
+
+        if (sub.getSubParams().get("option3").equals(EPARGNE)) {
+            fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
+            if (fromAccount != null) {
+                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) >= 5000) {
+
+                    isavailable = true;
+                }
+            }
+
+        } else {
+            fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+            if (fromAccount != null) {
+                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) >= 0) {
+
+                    isavailable = true;
+                }
+            }
+        }
 
         return isavailable;
     }
@@ -696,8 +719,7 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse fromAccoundTransfert(String evp, SubscriberInfo sub) {
-        String text = "Selectionner un numero puis appuyer sur envoyer \n A partir de votre compte :";
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        String text = " A partir de votre compte :";
         Option option1 = new Option();
         option1.setChoice(1);
         option1.setValue("Epargne a vue");
@@ -706,21 +728,24 @@ public class ProcessUssd {
         option2.setValue("Courant");
         OptionsType optionsType = new OptionsType();
         if (evp.equals(EPARGNE)) {
+            text = "Transfert sur compte courant à partir de votre compte : ";
             optionsType.getOption().add(option2);
         } else if (evp.equals(COURANT)) {
+            text = "Transfert sur compte courant à partir de votre compte : ";
             optionsType.getOption().add(option1);
         } else {
             optionsType.getOption().add(option1);
             optionsType.addOption(new Option(2, "Courant"));
             optionsType.addOption(new Option(3, "Plan tontine"));
         }
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         moovUssdResponse.setOptions(optionsType);
 
         return moovUssdResponse;
     }
 
     public MoovUssdResponse toAccountTransfertTiers(SubscriberInfo sub) {
-        String text = "Veuillez saisir le numero du tiers :";
+        String text = "Veuillez saisir le numéro de téléphone du tiers :";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         return moovUssdResponse;
     }
@@ -736,7 +761,7 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse soldForAccount(SubscriberInfo sub, String type, Map map) {
-        String text = "Selectionner le compte :";
+        String text = "Dépôt sur un compte de tiers : veuillez sélectionner le compte :";
         if (type.equals("dp")) {
             text = "Selectionner le compte de " + map.get("nombreCompleto") + " sur lequel vous voulez effectue le depot";
         }

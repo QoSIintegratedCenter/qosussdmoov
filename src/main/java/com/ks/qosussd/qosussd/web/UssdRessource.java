@@ -73,7 +73,7 @@ public class UssdRessource {
             log.info("go back go level {}", sub.getMenuLevel());
             activeSessions.put(msisdn, sub);
 
-            return startMoovUssd(sc, msisdn, "", lang, session_id, req_no, screen_id);
+            return startMoovUssd(sc, msisdn, sub.getUserInput(), lang, session_id, req_no, screen_id);
         } else {
             sub = activeSessions.get(msisdn);
             getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
@@ -88,11 +88,13 @@ public class UssdRessource {
                     log.info("MoovUssdResponse : {}", moovUssdResponse);
 //                    log.info("sub : {}");
                     System.out.println(sub);
+                    getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
                     return moovUssdResponse;
                 case 1:
                     log.info("choix nivaux " + sub.getMenuLevel());
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
+                    getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
 //                    log.info("choix niveux apres incre " + sub.getMenuLevel());
                     if (select == 1) {
                         log.info("choix depot ");
@@ -166,7 +168,8 @@ public class UssdRessource {
                     if (select == 2 && sub.getSubParams().get("option1") == CREDIT) {
                         log.info("choix credi plus {} ", DEMANDE_CREDIT);
                         sub.getSubParams().put("option2", DEMANDE_CREDIT);
-                        return processUssd.enterAmount(sub);
+                        String text = "Demande de crédit : veuillez saisir le montant sollicité :";
+                        return processUssd.enterAmount(sub, text);
                     }
                     if (select == 3 && sub.getSubParams().get("option1") == CREDIT) {
                         log.info("choix credi plus {} ", ETAT_CREDIT);
@@ -223,9 +226,9 @@ public class UssdRessource {
                         sub.setAmount(new BigDecimal(user_input));
                         sub.setUserInput(user_input);
                         StringBuilder stringBuilder = new StringBuilder();
-                        stringBuilder.append("Transfert de ")
+                        stringBuilder.append("Retrait de ")
                                 .append(sub.getAmount())
-                                .append(" fcfa de votre compte ")
+                                .append(" FCFA de votre compte ")
                                 .append(sub.getSubParams().get("option2"))
                                 .append(" sur votre compte Momo.\n")
                                 .append("Frais : 200 fcfa ")
@@ -279,7 +282,7 @@ public class UssdRessource {
                             sub.getSubParams().put("option3", EPARGNE);
                         }
                         log.info("option 2 {} , optiion 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
-                        return processUssd.enterAmount(sub);
+                        return processUssd.enterAmount(sub, "Veuillez saisir le montant à transférer");
                         /*} else {
                             return processUssd.endOperation("Option non disponible");
                         }*/
@@ -316,7 +319,7 @@ public class UssdRessource {
                                 sub.getSubParams().put("TIERS_NAME", accounInfo.get("nombreCompleto"));
                                 return processUssd.soldForAccount(sub, "dp", accounInfo);
                             } else {
-                                return processUssd.endOperation("Ce numero n'a pas de compte a padme");
+                                return processUssd.endOperation("Désolé ! Le tiers sélectionné ne dispose pas de compte courant");
                             }
                         } else {
                             return processUssd.moovLevel2Credit(sub);
@@ -335,7 +338,7 @@ public class UssdRessource {
                             String txt = "";
                             if (processUssd.checkAccounAvailable(sub)) {
                                 oldSessions.put(sub.getMsisdn(), sub);
-                                txt = "Votre operation est en cours de validation Merci.";
+                                txt = "Retrait à partir du compte " + sub.getSubParams().get("option2") + " effectué avec succès..";
                                 processUssd.retraitProcess(sub);
                             } else {
                                 txt = "Solde insuffisant";
@@ -345,7 +348,7 @@ public class UssdRessource {
                             return processUssd.endOperation(txt);
                         } else {
                             activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Opération annulée");
+                            return processUssd.endOperation("Retrait annulé");
                         }
                     } else if (sub.getSubParams().get("option1").equals(CREDIT)) {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
@@ -355,7 +358,8 @@ public class UssdRessource {
                                 StringBuilder stringBuilder = new StringBuilder();
                                 stringBuilder.append("Remboursement de ")
                                         .append(sub.getAmount())
-                                        .append(" fcfa, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)));
+                                        .append(" FCFA, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append("\nVotre choix");
 
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
@@ -387,17 +391,17 @@ public class UssdRessource {
                                 .append(" Fcfa ")
                                 .append("du compte ")
                                 .append(sub.getSubParams().get("option3"))
-                                .append(" pour ")
+                                .append(" sur votre compte ")
                                 .append(sub.getSubParams().get("option2"))
-                                .append(" fcfa, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                .append(" \n Appuyer sur");
+                                .append(" FCFA, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                .append("\nVotre choix");
                         return processUssd.momoConfirmOption(text.toString(), sub);
                     }
                     if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
                         if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
                             // selection de compte
                             getAccountSelectOption(sub);
-                            return processUssd.enterAmount(sub);
+                            return processUssd.enterAmount(sub, "Dépôt sur le compte courant d'un tiers : veuillez saisir le montant");
                         } else {
                             StringBuilder text1 = new StringBuilder();
                             if (select == 1) {
@@ -405,25 +409,25 @@ public class UssdRessource {
                                 sub.getSubParams().put("option3", REGURALISER);
                                 sub.setAmount(new BigDecimal((int) sub.getSubParams().get(REGURALISER)));
 
-                                text1.append("Rembourser ")
+                                text1.append("Remboursement de ")
                                         .append(sub.getAmount())
-                                        .append(" Fcfa ")
+                                        .append(" FCFA ")
                                         .append("pour le compte de ")
                                         .append(sub.getSubParams().get("TIERS_NAME"))
-                                        .append(" fcfa, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                        .append(" \n Appuyer sur");
+                                        .append(" ,frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append(" \n Votre choix");
                                 return processUssd.momoConfirmOption(text1.toString(), sub);
                             }
                             if (select == 2) {
                                 sub.getSubParams().put("option3", ECHEANCE);
                                 log.info("Credit rembousement echeance");
                                 sub.setAmount(new BigDecimal((int) sub.getSubParams().get(ECHEANCE)));
-                                text1.append("Rembourser ")
+                                text1.append("Remboursement de ")
                                         .append(sub.getAmount())
-                                        .append(" Fcfa ")
-                                        .append("pour le compte de ")
+                                        .append(" FCFA ")
+                                        .append("sur le compte de ")
                                         .append(sub.getSubParams().get("TIERS_NAME"))
-                                        .append(" fcfa, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append(" frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
                                         .append(" \n Appuyer sur");
                                 return processUssd.momoConfirmOption(text1.toString(), sub);
                             }

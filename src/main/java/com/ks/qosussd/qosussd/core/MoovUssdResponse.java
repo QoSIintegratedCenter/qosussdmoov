@@ -23,10 +23,10 @@ public class MoovUssdResponse implements Serializable {
     private int screenId;
     @JacksonXmlProperty
     private OptionsType options;
-//    @JacksonXmlProperty(localName = "back_link")
-//    private int backLink;
-//    @JacksonXmlProperty(localName = "home_link")
-//    private int homeLink;
+    @JacksonXmlProperty(localName = "back_link")
+    private int backLink;
+    @JacksonXmlProperty(localName = "home_link")
+    private int homeLink;
 
 }
 
