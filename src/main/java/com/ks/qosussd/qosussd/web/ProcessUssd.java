@@ -26,18 +26,18 @@ public class ProcessUssd {
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String, SubscriberInfo> oldSessions = new ConcurrentHashMap<>();
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm");
+
     MoovUssdResponse welcomLevel(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setText("Sélectionner un numéro puis appuyer sur envoyer");
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
+//        moovUssdResponse.setText("Sélectionner un numéro puis appuyer sur envoyer");
+
+        moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
 
         Option option = new Option();
         option.setChoice(1);
-        option.setValue("PADME ");
+        option.setValue(".PADME");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
 //            optionsType.getOption().add(option1);
@@ -48,31 +48,31 @@ public class ProcessUssd {
 
     MoovUssdResponse moovLevel1(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
         if (checkNumberExist(sub.getMsisdn())) {
-            moovUssdResponse.setText("PADME \n Selectionner un numero puis appuyer sur envoyer");
+//            moovUssdResponse.setText("PADME \n Selectionner un numero puis appuyer sur envoyer");
             moovUssdResponse.setScreenType("menu");
             moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
             Option option = new Option();
             option.setChoice(1);
-            option.setValue("Depot");
+            option.setValue(".Dépot");
             Option option3 = new Option();
             option3.setChoice(2);
-            option3.setValue("Retrait");
+            option3.setValue(".Rétrait");
             Option option4 = new Option();
             option4.setChoice(3);
-            option4.setValue("Credit");
+            option4.setValue(".Crédit");
             Option option2 = new Option();
             option2.setChoice(4);
-            option2.setValue("Transfert");
+            option2.setValue(".Transfert");
             Option option5 = new Option();
             option5.setChoice(5);
-            option5.setValue("Gestion des comptes");
+            option5.setValue(".Gestion des comptes");
             Option option6 = new Option();
             option6.setChoice(6);
-            option6.setValue("Operation pour tiers");
+            option6.setValue(".Operation pour tiers");
             OptionsType optionsType = new OptionsType();
             optionsType.getOption().add(option);
             optionsType.getOption().add(option3);
@@ -83,7 +83,7 @@ public class ProcessUssd {
             moovUssdResponse.setOptions(optionsType);
 
         } else {
-            moovUssdResponse.setText("Ce numero n'a pas un compte chez padme");
+            moovUssdResponse.setText("Désolé ! Vous n’êtes pas enregistré dans la base de données de PADME");
             moovUssdResponse.setScreenType("form");
             activeSessions.remove(sub.getMsisdn());
             moovUssdResponse.setSessionOp(TypeOperation.END.getType());
@@ -96,21 +96,21 @@ public class ProcessUssd {
 
     MoovUssdResponse moovLevel1Depot(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+//        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
         option.setChoice(1);
-        option.setValue("Epargne a vue");
+        option.setValue(". Epargne a vue");
         Option option3 = new Option();
         option3.setChoice(2);
-        option3.setValue("Plan tontine");
+        option3.setValue(". Plan tontine");
         Option option4 = new Option();
         option4.setChoice(3);
-        option4.setValue("Compte courant");
+        option4.setValue(". Compte courant");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
         optionsType.getOption().add(option3);
@@ -122,8 +122,8 @@ public class ProcessUssd {
     }
 
 
-    public MoovUssdResponse moovLevel1DepotCompte(SubscriberInfo sub) {
-        String text = "Veuillez saisir le montant :";
+    public MoovUssdResponse moovLevel1DepotCompte(SubscriberInfo sub, String text) {
+
         return getMoovUssdResponse(text, "form", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
 
     }
@@ -158,12 +158,12 @@ public class ProcessUssd {
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("Transfert de ")
                 .append(sub.getAmount())
-                .append(" fcfa de votre compte momo sur votre compte ")
+                .append(" fcfa de votre compte MoMo sur votre compte ")
                 .append(sub.getSubParams().get("option2"))
-                .append(".\n")
-                .append("Frais : 200 fcfa ")
+                .append(", ")
+                .append("Frais : 200 fcfa, ")
                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
-                .append("\n");
+                .append("\n Votre choix : ");
       /*  StringBuilder stringBuilder2 = new StringBuilder();
         stringBuilder.append("Transfert de ")
                 .append(sub.getAmount())
@@ -195,10 +195,10 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option = new Option();
         option.setChoice(1);
-        option.setValue("Confirmer");
+        option.setValue(". Confirmer");
         Option option1 = new Option();
         option1.setChoice(2);
-        option1.setValue("Annuler");
+        option1.setValue(". Annuler");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
         optionsType.getOption().add(option1);
@@ -231,8 +231,8 @@ public class ProcessUssd {
 
     public MoovUssdResponse padmeConfirmOption(String text, SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText(text);
         moovUssdResponse.setScreenType("form");
@@ -242,8 +242,8 @@ public class ProcessUssd {
 
     public MoovUssdResponse defaultException() {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
 //        moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Mauvais choix, merci de reessayer");
         moovUssdResponse.setScreenType("form");
@@ -259,9 +259,9 @@ public class ProcessUssd {
     public MoovUssdResponse moovLevel1Retrait(SubscriberInfo sub) {
 
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-        moovUssdResponse.setBackLink(1);
-        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
+//        moovUssdResponse.setBackLink(1);
+//        moovUssdResponse.setHomeLink(0);
+        moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
         moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
@@ -403,7 +403,7 @@ public class ProcessUssd {
         } else {
             // add check padme verifie id
             activeSessions.remove(sub.getMsisdn());
-            return endOperation("Operation annuler avec succes");
+            return endOperation("Opération annulée");
         }
     }
 
