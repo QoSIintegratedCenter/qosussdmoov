@@ -77,6 +77,7 @@ public class ApiConnect {
         String observation = "";
         String tipoTrans = "";
         String ref = "";
+        transData.put("codSistema", "AH");
         if (customer.getSubParams().get("option1").equals(DEPOT)) {
             type = "Depot";
             tipoTrans = "2";
@@ -88,6 +89,7 @@ public class ApiConnect {
             } else if (customer.getSubParams().get("option2").equals(COURANT)) {
 //                tipoTrans = "104";
                 observation = "Dépôt sur compte courant";
+                transData.put("codSistema", "CA");
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
         } else if (customer.getSubParams().get("option1").equals(DEPOT_TIERS)) {
@@ -101,6 +103,7 @@ public class ApiConnect {
             } else if (customer.getSubParams().get("option2").equals(COURANT)) {
 //                tipoTrans = "104";
                 observation = "Dépôt sur compte courant de tiers";
+                transData.put("codSistema", "CA");
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getSubParams().get("PHONE_TIERS"));
             }
         } else if (customer.getSubParams().get("option1").equals(RETRAIT)) {
@@ -110,18 +113,19 @@ public class ApiConnect {
             tipoTrans = "1";
             if (customer.getSubParams().get("option2").equals(EPARGNE)) {
 
-                observation = "Rétrait sur compte épargne";
+                observation = "Retrait à partir du compte épargne";
                 accountInfo = getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
             } else if (customer.getSubParams().get("option2").equals(COURANT)) {
 //                tipoTrans = "104";
-                observation = "Rétrait sur compte courant";
+                transData.put("codSistema", "CA");
+                observation = "Retrait à partir du compte courant";
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
         }
 
         transData.put("origine", customer.getMsisdn());
         transData.put("codCuenta", accountInfo.get("codCuenta"));
-        transData.put("codSistema", "AH");
+
         transData.put("refTransQos", ref);
         transData.put("estPrisEnCompte", 0);
         transData.put("fecha", LocalDateTime.now().toString());
@@ -132,6 +136,7 @@ public class ApiConnect {
         transData.put("typeOperation", type);
         transData.put("telefono", customer.getMsisdn());
         transData.put("terminal", "MOOV USSD");
+        transData.put("source ", "externe");
         transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
         System.out.println(transData);
         HttpHeaders httpHeaders = new HttpHeaders();

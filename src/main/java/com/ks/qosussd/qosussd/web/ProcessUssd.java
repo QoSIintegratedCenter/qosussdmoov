@@ -414,7 +414,7 @@ public class ProcessUssd {
         httpHeaders.set("Content-type", "Application/json");
         Map accoount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
         Map toaccoount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
-        if (new BigDecimal(accoount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 0) {
+        if (new BigDecimal(accoount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 5000) {
             LocalDateTime now = LocalDateTime.now();
             Map transData = new HashMap();
             Map transDatato = new HashMap();
@@ -428,26 +428,28 @@ public class ProcessUssd {
             transData.put("tipoTrans", 1);
             transData.put("monto", sub.getAmount());
             transData.put("frais", 200);
-            transData.put("observation", "Retrait pour rembourser de credit");
+            transData.put("observation", "Retrait du compte épargne pour remboursement de crédit");
             transData.put("typeOperation", "Retrait");
             transData.put("telefono", sub.getMsisdn());
             transData.put("terminal", "MOOV USSD");
             transData.put("montoNeto", sub.getAmount().add(new BigDecimal(200)));
             transData.put("origine", sub.getMsisdn());
+            transData.put("source ", "interne");
 
             transDatato.put("codCuenta", toaccoount.get("codCuenta"));
-            transDatato.put("codSistema", "AH");
+            transDatato.put("codSistema", "CA");
             transDatato.put("refTransQos", ref);
             transDatato.put("fecha", now.toString());
             transDatato.put("estPrisEnCompte", 0);
             transDatato.put("tipoTrans", 2);
             transDatato.put("monto", sub.getAmount());
             transDatato.put("frais", 0);
-            transDatato.put("observation", "Depot pour rembourser de credit");
+            transDatato.put("observation", "Dépôt sur compte courant pour remboursement de crédit");
             transDatato.put("typeOperation", "Depot");
             transDatato.put("telefono", sub.getMsisdn());
             transDatato.put("terminal", "MOOV USSD");
             transDatato.put("montoNeto", sub.getAmount());
+            transDatato.put("source ", "interne");
             RestTemplate restTemplate = new RestTemplate();
 //                    RestTemplate restTemplate1 = new RestTemplate();
             log.info("from data: {} to data: {}", transData, transDatato);
@@ -490,12 +492,16 @@ public class ProcessUssd {
                 log.info("from epargne");
                 fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
                 toAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
+                transData.put("codSistema", "AH");
+                transDatato.put("codSistema", "CA");
 
 
             } else {
                 log.info("from courant");
                 fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
                 toAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
+                transData.put("codSistema", "CA");
+                transDatato.put("codSistema", "AH");
 
             }
             if (fromAccount != null) {
@@ -504,7 +510,7 @@ public class ProcessUssd {
                     transData.put("origine", customer.getMsisdn());
                     transData.put("codCuenta", fromAccount.get("codCuenta"));
                     transData.put("refTransQos", ref);
-                    transData.put("codSistema", "AH");
+
                     transData.put("estPrisEnCompte", 0);
                     transData.put("fecha", now.toString());
                     transData.put("tipoTrans", 1);
@@ -516,9 +522,10 @@ public class ProcessUssd {
                     transData.put("terminal", "MOOV USSD");
                     transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
                     transData.put("origine", customer.getMsisdn());
+                    transData.put("source ", "interne");
 
                     transDatato.put("codCuenta", toAccount.get("codCuenta"));
-                    transDatato.put("codSistema", "AH");
+//                    transDatato.put("codSistema", "AH");
                     transDatato.put("refTransQos", ref);
                     transDatato.put("fecha", now.toString());
                     transDatato.put("estPrisEnCompte", 0);
@@ -530,6 +537,7 @@ public class ProcessUssd {
                     transDatato.put("telefono", customer.getMsisdn());
                     transDatato.put("terminal", "MOOV USSD");
                     transDatato.put("montoNeto", customer.getAmount());
+                    transDatato.put("source ", "interne");
                     RestTemplate restTemplate = new RestTemplate();
 //                    RestTemplate restTemplate1 = new RestTemplate();
                     log.info("from data: {} to data: {}", transData, transDatato);
