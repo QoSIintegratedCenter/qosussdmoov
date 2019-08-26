@@ -13,7 +13,7 @@ import java.io.Serializable;
 @NoArgsConstructor
 public class Option implements Serializable {
     @JacksonXmlProperty(isAttribute = true)
-    private int choice;
+    private Object choice;
     @JacksonXmlText
     private String value;
 }

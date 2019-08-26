@@ -36,8 +36,8 @@ public class ProcessUssd {
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
 
         Option option = new Option();
-        option.setChoice(1);
-        option.setValue(".PADME");
+        option.setChoice("1.");
+        option.setValue("PADME");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
 //            optionsType.getOption().add(option1);
@@ -196,10 +196,10 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option = new Option();
         option.setChoice(1);
-        option.setValue(". Confirmer");
+        option.setValue("Confirmer");
         Option option1 = new Option();
         option1.setChoice(2);
-        option1.setValue(". Annuler");
+        option1.setValue("Annuler");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
         optionsType.getOption().add(option1);
@@ -230,20 +230,10 @@ public class ProcessUssd {
     }
 */
 
-    public MoovUssdResponse padmeConfirmOption(String text, SubscriberInfo sub) {
-        MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-//        moovUssdResponse.setBackLink(1);
-//        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-        moovUssdResponse.setText(text);
-        moovUssdResponse.setScreenType("form");
-        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
-        return moovUssdResponse;
-    }
 
     public MoovUssdResponse defaultException() {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-//        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
 //        moovUssdResponse.setScreenId(1);
         moovUssdResponse.setText("Mauvais choix, merci de reessayer");
@@ -373,8 +363,8 @@ public class ProcessUssd {
             data.put("clientid", getProp("momo_moov_clientId"));
             data.put("transref", randomAlphaNumeric());
             data.put("amount", sub.getAmount());
-            RestTemplate restTemplate = new RestTemplate();
-            if (sub.getSubParams().get("option1").equals(DEPOT) || sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
+//            RestTemplate restTemplate = new RestTemplate();
+            if (sub.getSubParams().get("option1").equals(DEPOT) || sub.getSubParams().get("option2").equals(DEPOT_TIERS) || sub.getSubParams().get("option2").equals(REMBOURSEMENT_TIERS)) {
                 log.info("Option depot  ou depot tiers");
 //                sendMomoRequest(data);
                 new Thread(() -> {
