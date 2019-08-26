@@ -110,7 +110,7 @@ public class ApiConnect {
             type = "Depot";
             tipoTrans = "2";
             ref = (String) map.get("transref");
-            observation = "Dépôt sur compte courant de tiers";
+            observation = "Dépôt sur compte courant de tiers pour remboursement de crédit";
             transData.put("codSistema", "CA");
             accountInfo = getAccountInfo(getProp("operation_account") + customer.getSubParams().get("PHONE_TIERS"));
 
