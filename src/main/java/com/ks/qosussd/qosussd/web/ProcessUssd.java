@@ -25,7 +25,8 @@ public class ProcessUssd {
 
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String, SubscriberInfo> oldSessions = new ConcurrentHashMap<>();
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
+//    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     MoovUssdResponse welcomLevel(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -424,7 +425,7 @@ public class ProcessUssd {
             transData.put("terminal", "MOOV USSD");
             transData.put("montoNeto", sub.getAmount().add(new BigDecimal(200)));
             transData.put("origine", sub.getMsisdn());
-            transData.put("source ", "interne");
+            transData.put("source", "INTERNE");
 
             transDatato.put("codCuenta", toaccoount.get("codCuenta"));
             transDatato.put("codSistema", "CA");
@@ -439,7 +440,7 @@ public class ProcessUssd {
             transDatato.put("telefono", sub.getMsisdn());
             transDatato.put("terminal", "MOOV USSD");
             transDatato.put("montoNeto", sub.getAmount());
-            transDatato.put("source ", "interne");
+            transDatato.put("source", "INTERNE");
             RestTemplate restTemplate = new RestTemplate();
 //                    RestTemplate restTemplate1 = new RestTemplate();
             log.info("from data: {} to data: {}", transData, transDatato);
@@ -512,7 +513,7 @@ public class ProcessUssd {
                     transData.put("terminal", "MOOV USSD");
                     transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
                     transData.put("origine", customer.getMsisdn());
-                    transData.put("source ", "interne");
+                    transData.put("source", "INTERNE");
 
                     transDatato.put("codCuenta", toAccount.get("codCuenta"));
 //                    transDatato.put("codSistema", "AH");
@@ -527,7 +528,7 @@ public class ProcessUssd {
                     transDatato.put("telefono", customer.getMsisdn());
                     transDatato.put("terminal", "MOOV USSD");
                     transDatato.put("montoNeto", customer.getAmount());
-                    transDatato.put("source ", "interne");
+                    transDatato.put("source", "INTERNE");
                     RestTemplate restTemplate = new RestTemplate();
 //                    RestTemplate restTemplate1 = new RestTemplate();
                     log.info("from data: {} to data: {}", transData, transDatato);
@@ -670,7 +671,7 @@ public class ProcessUssd {
         Map fromAccount = null;
 
 
-        if (sub.getSubParams().get("option3").equals(EPARGNE)) {
+        if (sub.getSubParams().get("option2").equals(EPARGNE)) {
             fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
             if (fromAccount != null) {
                 if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) >= 5000) {
@@ -707,7 +708,7 @@ public class ProcessUssd {
         Option option2 = new Option();
         option2.setChoice("2.");
         option2.setValue("Courant");
-        Option option3 = new Option(3, "Compte tiers a PADME");
+        Option option3 = new Option("3.", "Compte tiers a PADME");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option1);
         optionsType.getOption().add(option2);
@@ -726,7 +727,7 @@ public class ProcessUssd {
         option2.setValue("Courant");
         OptionsType optionsType = new OptionsType();
         if (evp.equals(EPARGNE)) {
-            text = "Transfert sur compte courant à partir de votre compte";
+            text = "Transfert sur compte épargne à partir de votre compte";
             optionsType.getOption().add(option2);
         } else if (evp.equals(COURANT)) {
             text = "Transfert sur compte courant à partir de votre compte";
@@ -825,6 +826,7 @@ public class ProcessUssd {
         data.put("Terminal", "MOOV USSD");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "Application/json");
+        log.info("demande credit data: {}", data);
         RestTemplate restTemplate = new RestTemplate();
         try {
             Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();

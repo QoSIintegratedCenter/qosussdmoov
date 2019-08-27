@@ -244,19 +244,19 @@ public class UssdRessource {
                             if (select == 1) {
                                 log.info("Credit rembousement regulariser");
                                 sub.getSubParams().put("option3", REGURALISER);
-                                sub.setAmount(new BigDecimal((int) sub.getSubParams().get(REGURALISER)));
+                                sub.setAmount(new BigDecimal(sub.getSubParams().get(REGURALISER).toString()));
                                 return processUssd.debitAccount(sub);
                             }
                             if (select == 2) {
                                 sub.getSubParams().put("option3", ECHEANCE);
                                 log.info("Credit rembousement echeance");
-                                sub.setAmount(new BigDecimal((int) sub.getSubParams().get(ECHEANCE)));
+                                sub.setAmount(new BigDecimal(sub.getSubParams().get(ECHEANCE).toString()));
                                 return processUssd.debitAccount(sub);
                             }
                             if (select == 3) {
                                 log.info("Credit rembousement autre montant");
                                 sub.getSubParams().put("option3", AUTRE_MONTANT);
-                                return processUssd.moovLevel1DepotCompte(sub, "");
+                                return processUssd.moovLevel1DepotCompte(sub, "Remboursement de crédit, veuillez saisir le montant a remboursé :");
                             }
                         }
                         if ((sub.getSubParams().get("option2").equals(DEMANDE_CREDIT))) {
@@ -277,12 +277,17 @@ public class UssdRessource {
                         log.info("choix Transfert: choix account");
                         if (select == 1 && sub.getSubParams().get("option2") == EPARGNE) {
                             sub.getSubParams().put("option3", COURANT);
+                            return processUssd.enterAmount(sub, "Veuillez saisir le montant a transférer");
+
                         } else if (select == 1 && sub.getSubParams().get("option2") == COURANT) {
                             System.out.println("put option 3");
                             sub.getSubParams().put("option3", EPARGNE);
+                            return processUssd.enterAmount(sub, "Veuillez saisir le montant a transférer");
+
+                        } else {
+                            return processUssd.endOperation("Désolé, Ce produit n'est pas encore disponible");
                         }
-                        log.info("option 2 {} , optiion 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
-                        return processUssd.enterAmount(sub, "Veuillez saisir le montant à transférer");
+//                        log.info("option 2 {} , optiion 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
                         /*} else {
                             return processUssd.endOperation("Option non disponible");
                         }*/
@@ -344,11 +349,12 @@ public class UssdRessource {
                     } else if (sub.getSubParams().get("option1") == RETRAIT) {
 //                        processUssd.checkValidUserPadme(user_input, sub);
                         if (Integer.parseInt(user_input) == 1) {
+                            log.info("confirmation de retrait");
                             String txt = "";
                             if (processUssd.checkAccounAvailable(sub)) {
                                 oldSessions.put(sub.getMsisdn(), sub);
-                                txt = "Retrait à partir du compte " + sub.getSubParams().get("option2") + " effectué avec succès..";
                                 processUssd.retraitProcess(sub);
+                                txt = "Retrait à partir du compte " + sub.getSubParams().get("option2") + " effectué avec succès..";
                             } else {
                                 txt = "Solde insuffisant";
                             }
