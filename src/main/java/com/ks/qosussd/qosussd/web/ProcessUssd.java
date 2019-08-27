@@ -26,7 +26,7 @@ public class ProcessUssd {
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String, SubscriberInfo> oldSessions = new ConcurrentHashMap<>();
     DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy");
-//    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
+    DateTimeFormatter dateTimeFormatter1 = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss");
 
     MoovUssdResponse welcomLevel(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -405,7 +405,8 @@ public class ProcessUssd {
         httpHeaders.set("Content-type", "Application/json");
         Map accoount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
         Map toaccoount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
-        if (new BigDecimal(accoount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 5000) {
+//        log.info("Rm compare {} ", new BigDecimal(accoount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue());
+        if (new BigDecimal(accoount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= 2700) {
             LocalDateTime now = LocalDateTime.now();
             Map transData = new HashMap();
             Map transDatato = new HashMap();
@@ -450,7 +451,7 @@ public class ProcessUssd {
 //                        log.info("Result from data: {} to data: {}", res, res2);
                 log.info("Transfert effectué avec succes");
                 activeSessions.remove(sub.getMsisdn());
-                return endOperation("Operatio  effectuee avec succes.");
+                return endOperation("Operation  effectuee avec succes.");
 
             } catch (Exception e) {
                 log.info("Erreur lors de la transfert " + e);
@@ -478,9 +479,11 @@ public class ProcessUssd {
             Map toAccount = new HashMap();
             Map transData = new HashMap();
             String ref = randomAlphaNumeric();
+            int compareValue = 0;
             Map transDatato = new HashMap();
             if (sub.getSubParams().get("option3").equals(EPARGNE)) {
                 log.info("from epargne");
+                compareValue = 2700;
                 fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
                 toAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
                 transData.put("codSistema", "AH");
@@ -496,7 +499,7 @@ public class ProcessUssd {
 
             }
             if (fromAccount != null) {
-                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) > 0) {
+                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= compareValue) {
                     LocalDateTime now = LocalDateTime.now();
                     transData.put("origine", customer.getMsisdn());
                     transData.put("codCuenta", fromAccount.get("codCuenta"));
@@ -674,7 +677,9 @@ public class ProcessUssd {
         if (sub.getSubParams().get("option2").equals(EPARGNE)) {
             fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
             if (fromAccount != null) {
-                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) >= 5000) {
+                log.info("comparaison " + new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))));
+                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= 2500) {
+//                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) <= 2500) {
 
                     isavailable = true;
                 }
@@ -683,7 +688,9 @@ public class ProcessUssd {
         } else {
             fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
             if (fromAccount != null) {
-                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) >= 0) {
+
+                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= 200) {
+//                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).compareTo(sub.getAmount().add(new BigDecimal(200))) <= 0) {
 
                     isavailable = true;
                 }
@@ -817,10 +824,10 @@ public class ProcessUssd {
         }
         */
         data.put("CodSolicitud", "SOL-099-" + randomAlphaNumeric3());
-        data.put("FechaSolicitud", LocalDateTime.now().toString());
+        data.put("FechaSolicitud", LocalDateTime.now().format(dateTimeFormatter1).toString());
         data.put("MontoSolicitado", sub.getAmount());
         data.put("CodSistema", "AH");
-        data.put("Observacion", "Demande de credit");
+        data.put("observacion", "Demande de credit");
         data.put("CodCuenta", fromAccount.get("codCuenta"));
         data.put("RefTransQos", randomAlphaNumeric());
         data.put("Terminal", "MOOV USSD");

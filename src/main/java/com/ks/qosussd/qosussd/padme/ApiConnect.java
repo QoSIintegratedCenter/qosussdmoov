@@ -78,6 +78,7 @@ public class ApiConnect {
         String tipoTrans = "";
         String ref = "";
         transData.put("codSistema", "AH");
+        transData.put("source", "EXTERNE");
         if (customer.getSubParams().get("option1").equals(DEPOT)) {
             type = "Depot";
             tipoTrans = "2";
@@ -118,6 +119,7 @@ public class ApiConnect {
             log.info("Retrait Option transation");
             type = "Retrait";
             ref = randomAlphaNumeric();
+            transData.put("source", "INTERNE");
             tipoTrans = "1";
             if (customer.getSubParams().get("option2").equals(EPARGNE)) {
 
@@ -144,7 +146,7 @@ public class ApiConnect {
         transData.put("typeOperation", type);
         transData.put("telefono", customer.getMsisdn());
         transData.put("terminal", "MOOV USSD");
-        transData.put("source", "EXTERNE");
+
         transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
         System.out.println(transData);
         HttpHeaders httpHeaders = new HttpHeaders();
