@@ -56,7 +56,7 @@ public class UssdRessource {
         MoovUssdResponse moovUssdResponse = null;
 //        log.info("userInput {}", user_input);
         SubscriberInfo sub = null;
-        if (user_input.isEmpty() && activeSessions.get(msisdn) == null) {
+        if ((user_input.isEmpty() && activeSessions.get(msisdn) == null) || (user_input.isEmpty() && activeSessions.get(msisdn) != null && !activeSessions.get(msisdn).getSessionId().equals(session_id))) {
             sub = new SubscriberInfo();
             sub.setMsisdn(msisdn);
             getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
@@ -132,32 +132,32 @@ public class UssdRessource {
                     sub.incrementMenuLevel();
                     if (select == 1 && sub.getSubParams().get("option1") == DEPOT) {
                         log.info("choix depot plus epargne ");
-                        String text1 = "Dépôt sur votre compte épargne : veuillez saisir le montant";
+                        String text1 = "Dépot sur votre compte épargne, veuillez saisir le montant";
                         sub.getSubParams().put("option2", EPARGNE);
                         return processUssd.moovLevel1DepotCompte(sub, text1);
                     } else if (select == 2 && sub.getSubParams().get("option1").equals(DEPOT)) {
                         log.info("choix depot plus plant tontine ");
                         sub.getSubParams().put("option2", PLAN_TONTINE);
-//                        String text1 = "Dépôt sur votre compte épargne : veuillez saisir le montant";
+//                        String text1 = "Dépot sur votre compte épargne : veuillez saisir le montant";
                         activeSessions.remove(msisdn);
                         return processUssd.endOperation("Désolé ! Ce produit n'est pas encore disponible");
 
                     } else if (select == 3 && sub.getSubParams().get("option1").equals(DEPOT)) {
                         log.info("choix depot plus courant ");
                         sub.getSubParams().put("option2", COURANT);
-                        String text1 = "Dépôt sur votre compte courant : veuillez saisir le montant";
+                        String text1 = "Dépot sur votre compte courant, veuillez saisir le montant";
                         return processUssd.moovLevel1DepotCompte(sub, text1);
                     }
                     if (select == 1 && sub.getSubParams().get("option1") == RETRAIT) {
                         log.info("choix retrait plus {} ", sub.getSubParams().get("option1"));
                         sub.getSubParams().put("option2", EPARGNE);
-                        String text1 = "Retrait à partir du compte épargne à vue : veuillez saisir le montant à retirer :";
+                        String text1 = "Retrait a partir du compte épargne a vue, veuillez saisir le montant à retirer";
                         return processUssd.moovLevel1DepotCompte(sub, text1);
                     }
                     if (select == 2 && sub.getSubParams().get("option1") == RETRAIT) {
                         log.info("choix retrait plus {} ", sub.getSubParams().get("option1"));
                         sub.getSubParams().put("option2", COURANT);
-                        String text1 = "Retrait à partir du compte courant: veuillez saisir le montant à retirer :";
+                        String text1 = "Retrait à partir du compte courant, veuillez saisir le montant à retirer";
                         return processUssd.moovLevel1DepotCompte(sub, text1);
                     }
                     if (select == 1 && sub.getSubParams().get("option1") == CREDIT) {
@@ -168,7 +168,7 @@ public class UssdRessource {
                     if (select == 2 && sub.getSubParams().get("option1") == CREDIT) {
                         log.info("choix credi plus {} ", DEMANDE_CREDIT);
                         sub.getSubParams().put("option2", DEMANDE_CREDIT);
-                        String text = "Demande de crédit : veuillez saisir le montant sollicité :";
+                        String text = "Demande de crédit, veuillez saisir le montant sollicité";
                         return processUssd.enterAmount(sub, text);
                     }
                     if (select == 3 && sub.getSubParams().get("option1") == CREDIT) {
@@ -185,7 +185,7 @@ public class UssdRessource {
                         return processUssd.fromAccoundTransfert(EPARGNE, sub);
                     }
                     if (select == 2 && sub.getSubParams().get("option1") == TRANSFERT) {
-                        log.info("choix transfert: courant  ");
+                        log.info("choix transfert : courant  ");
                         sub.getSubParams().put("option2", COURANT);
 
                         return processUssd.fromAccoundTransfert(COURANT, sub);
@@ -410,7 +410,7 @@ public class UssdRessource {
                         if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
                             // selection de compte
                             getAccountSelectOption(sub);
-                            return processUssd.enterAmount(sub, "Dépôt sur le compte courant d'un tiers : veuillez saisir le montant");
+                            return processUssd.enterAmount(sub, "Dépot sur le compte courant d'un tiers, veuillez saisir le montant");
                         } else {
                             System.out.println(user_input);
                             select = Integer.parseInt(user_input);
@@ -444,7 +444,7 @@ public class UssdRessource {
                             } else if (select == 3) {
                                 log.info("Credit rembousement autre montant");
                                 sub.getSubParams().put("option3", AUTRE_MONTANT);
-                                return processUssd.enterAmount(sub, "Veuillez saisir le montant à rembourser pour le tiers :");
+                                return processUssd.enterAmount(sub, "Veuillez saisir le montant à rembourser pour le tiers");
                             }
                         }
                     } else {
@@ -501,7 +501,21 @@ public class UssdRessource {
                                     .append(sub.getSubParams().get("TIERS_NAME"));
                             return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                         } else {
-                            return processUssd.getMoovUssdResponseConfirm(user_input, sub);
+                            if (sub.getSubParams().get("option3").equals(AUTRE_MONTANT)) {
+                                StringBuilder text1 = new StringBuilder();
+                                sub.setAmount(new BigDecimal(user_input));
+                                text1.append("Remboursement de ")
+                                        .append(sub.getAmount())
+                                        .append(" FCFA ")
+                                        .append("sur le compte de ")
+                                        .append(sub.getSubParams().get("TIERS_NAME"))
+                                        .append(" frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append("\nVotre choix");
+                                return processUssd.momoConfirmOption(text1.toString(), sub);
+                            } else {
+                                return processUssd.getMoovUssdResponseConfirm(user_input, sub);
+                            }
+
                         }
                     }
                 case 6:
@@ -520,6 +534,11 @@ public class UssdRessource {
                         }
 
 
+                    }
+                    if (sub.getSubParams().get("option1").equals(OPERATION_TIERS)) {
+                        if (sub.getSubParams().get("option2").equals(REMBOURSEMENT_TIERS)) {
+                            return processUssd.getMoovUssdResponseConfirm(user_input, sub);
+                        }
                     }
 
                 case 7:
@@ -543,10 +562,10 @@ public class UssdRessource {
 
                     log.info("Choix autre USSD");
                     moovUssdResponse = new MoovUssdResponse();
-                    moovUssdResponse.setText("PADME \n vous avez faire un mauvais chois ");
+                    moovUssdResponse.setText(" vous avez faire un mauvais choix ");
 //                    moovUssdResponse.setBackLink(1);
 //                    moovUssdResponse.setHomeLink(0);
-                    moovUssdResponse.setScreenId(1);
+                    moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
                     moovUssdResponse.setScreenType("form");
                     moovUssdResponse.setSessionOp(TypeOperation.END.getType());
                     log.info("MoovUssdResponse : {}", moovUssdResponse);

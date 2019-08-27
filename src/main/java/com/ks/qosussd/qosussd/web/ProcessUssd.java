@@ -25,7 +25,7 @@ public class ProcessUssd {
 
     public static final ConcurrentHashMap<String, SubscriberInfo> activeSessions = new ConcurrentHashMap<>();
     public static final ConcurrentHashMap<String, SubscriberInfo> oldSessions = new ConcurrentHashMap<>();
-    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MMMM-yyyy HH:mm");
+    DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm");
 
     MoovUssdResponse welcomLevel(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
@@ -56,23 +56,23 @@ public class ProcessUssd {
             moovUssdResponse.setScreenType("menu");
             moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
             Option option = new Option();
-            option.setChoice(1);
-            option.setValue(".Dépot");
+            option.setChoice("1.");
+            option.setValue("Dépot");
             Option option3 = new Option();
-            option3.setChoice(2);
-            option3.setValue(".Rétrait");
+            option3.setChoice("2.");
+            option3.setValue("Rétrait");
             Option option4 = new Option();
-            option4.setChoice(3);
-            option4.setValue(".Crédit");
+            option4.setChoice("3.");
+            option4.setValue("Crédit");
             Option option2 = new Option();
-            option2.setChoice(4);
-            option2.setValue(".Transfert");
+            option2.setChoice("4.");
+            option2.setValue("Transfert");
             Option option5 = new Option();
-            option5.setChoice(5);
-            option5.setValue(".Gestion des comptes");
+            option5.setChoice("5.");
+            option5.setValue("Gestion des comptes");
             Option option6 = new Option();
-            option6.setChoice(6);
-            option6.setValue(".Operation pour tiers");
+            option6.setChoice("6.");
+            option6.setValue("Operation pour tiers");
             OptionsType optionsType = new OptionsType();
             optionsType.getOption().add(option);
             optionsType.getOption().add(option3);
@@ -96,21 +96,21 @@ public class ProcessUssd {
 
     MoovUssdResponse moovLevel1Depot(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-//        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
 //        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
-        option.setChoice(1);
-        option.setValue(". Epargne a vue");
+        option.setChoice("1.");
+        option.setValue("Epargne a vue");
         Option option3 = new Option();
-        option3.setChoice(2);
-        option3.setValue(". Plan tontine");
+        option3.setChoice("2.");
+        option3.setValue("Plan tontine");
         Option option4 = new Option();
-        option4.setChoice(3);
-        option4.setValue(". Compte courant");
+        option4.setChoice("3.");
+        option4.setValue("Compte courant");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
         optionsType.getOption().add(option3);
@@ -195,10 +195,10 @@ public class ProcessUssd {
     private MoovUssdResponse getUssdResponse(String text, SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option = new Option();
-        option.setChoice(1);
+        option.setChoice("1.");
         option.setValue("Confirmer");
         Option option1 = new Option();
-        option1.setChoice(2);
+        option1.setChoice("2.");
         option1.setValue("Annuler");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
@@ -257,10 +257,10 @@ public class ProcessUssd {
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
-        option.setChoice(1);
+        option.setChoice("1.");
         option.setValue("Epargne a vue");
         Option option2 = new Option();
-        option2.setChoice(2);
+        option2.setChoice("2.");
         option2.setValue("Compte courant");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
@@ -284,20 +284,20 @@ public class ProcessUssd {
 
     public MoovUssdResponse moovLevel1Credit(SubscriberInfo sub) {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
-//        moovUssdResponse.setBackLink(1);
+        moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
         moovUssdResponse.setText("Type de compte");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
-        option.setChoice(1);
+        option.setChoice("1.");
         option.setValue("Remboursement");
         Option option3 = new Option();
-        option3.setChoice(2);
+        option3.setChoice("2.");
         option3.setValue("Demande de crédit");
         Option option4 = new Option();
-        option4.setChoice(3);
+        option4.setChoice("3.");
         option4.setValue("Etat du crédit");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
@@ -316,15 +316,15 @@ public class ProcessUssd {
         }
         Option option = new Option();
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Votre choix", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
-        option.setChoice(1);
+        option.setChoice("1.");
         sub.getSubParams().put(Constants.REGURALISER, infoCredit.get("restePourSolde"));
         sub.getSubParams().put(Constants.ECHEANCE, infoCredit.get("montantEcheance"));
         option.setValue("Montant à payer pour régulariser : " + infoCredit.get("restePourSolde") + " FCFA");
         Option option3 = new Option();
-        option3.setChoice(2);
+        option3.setChoice("2.");
         option3.setValue("Prochaine échéance : " + infoCredit.get("montantEcheance") + " FCFA ");
         Option option4 = new Option();
-        option4.setChoice(3);
+        option4.setChoice("3.");
         option4.setValue("Autre montant à payer");
         OptionsType optionsTypeC = new OptionsType();
         optionsTypeC.getOption().add(option);
@@ -339,10 +339,10 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Remboursé de votre compte :", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
 
         Option option = new Option();
-        option.setChoice(1);
+        option.setChoice("1.");
         option.setValue("Momo");
         Option option2 = new Option();
-        option2.setChoice(2);
+        option2.setChoice("2.");
         option2.setValue("Epargne a vue");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
@@ -598,7 +598,7 @@ public class ProcessUssd {
                 "Montant échéance : " + infoCredit.get("montantEcheance") + "\n" +
                 "Montant impayé : " + infoCredit.get("montantImpaye") + "\n" +
                 "Reste à solder : " + infoCredit.get("restePourSolde") + "\n" +
-                "Date de la dernière échance : " + timestamp.toLocalDateTime().format(dateTimeFormatter));
+                "Dernière échéance : " + timestamp.toLocalDateTime().format(dateTimeFormatter));
 //                "Date de la dernière échance : "+ new Date(infoCredit.get("dateDerniereEcheance").toString()));
         return builder.toString();
     }
@@ -699,13 +699,13 @@ public class ProcessUssd {
      * @return
      */
     public MoovUssdResponse moovLevel1Transfert(SubscriberInfo sub) {
-        String text = "Selectionner un numero puis appuyer sur envoyer \n Transferer sur votre compte :";
+        String text = "Votre choix ";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option1 = new Option();
-        option1.setChoice(1);
+        option1.setChoice("1.");
         option1.setValue("Epargne a vue");
         Option option2 = new Option();
-        option2.setChoice(2);
+        option2.setChoice("2.");
         option2.setValue("Courant");
         Option option3 = new Option(3, "Compte tiers a PADME");
         OptionsType optionsType = new OptionsType();
@@ -717,24 +717,24 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse fromAccoundTransfert(String evp, SubscriberInfo sub) {
-        String text = " A partir de votre compte :";
+        String text = " A partir de votre compte";
         Option option1 = new Option();
-        option1.setChoice(1);
+        option1.setChoice("1.");
         option1.setValue("Epargne a vue");
         Option option2 = new Option();
-        option2.setChoice(1);
+        option2.setChoice("1.");
         option2.setValue("Courant");
         OptionsType optionsType = new OptionsType();
         if (evp.equals(EPARGNE)) {
-            text = "Transfert sur compte courant à partir de votre compte : ";
+            text = "Transfert sur compte courant à partir de votre compte";
             optionsType.getOption().add(option2);
         } else if (evp.equals(COURANT)) {
-            text = "Transfert sur compte courant à partir de votre compte : ";
+            text = "Transfert sur compte courant à partir de votre compte";
             optionsType.getOption().add(option1);
         } else {
             optionsType.getOption().add(option1);
-            optionsType.addOption(new Option(2, "Courant"));
-            optionsType.addOption(new Option(3, "Plan tontine"));
+            optionsType.addOption(new Option("2.", "Courant"));
+            optionsType.addOption(new Option("3.", "Plan tontine"));
         }
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         moovUssdResponse.setOptions(optionsType);
