@@ -212,7 +212,7 @@ public class UssdRessource {
                         return processUssd.tiersAccount(sub);
                     }
                     if (select == 2 && sub.getSubParams().get("option1") == OPERATION_TIERS) {
-                        log.info("choix operation tiers: depot ");
+                        log.info("choix operation tiers: rembousement ");
                         sub.getSubParams().put("option2", REMBOURSEMENT_TIERS);
                         return processUssd.tiersAccount(sub);
                     } else {
@@ -320,12 +320,12 @@ public class UssdRessource {
                         if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
                             log.info("tiers phone number {}", user_input);
                             Map accounInfo = new ApiConnect().getAccountInfo(getProp("infoaccount") + "229" + user_input);
-                            if (!accounInfo.isEmpty()) {
+                            if (accounInfo != null && !accounInfo.isEmpty()) {
                                 sub.getSubParams().put("PHONE_TIERS", "229" + user_input);
                                 sub.getSubParams().put("TIERS_NAME", accounInfo.get("nombreCompleto"));
                                 return processUssd.soldForAccount(sub, "dp", accounInfo);
                             } else {
-                                return processUssd.endOperation("Désolé ! Le tiers sélectionné ne dispose pas de compte courant");
+                                return processUssd.endOperation("Désolé ! Le tier ne dispose pas de compte n ");
                             }
                         } else {
                             log.info("tiers phone number {}", user_input);
