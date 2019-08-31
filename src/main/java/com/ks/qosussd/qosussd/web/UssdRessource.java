@@ -127,12 +127,12 @@ public class UssdRessource {
                         return processUssd.endOperation("Mauvaise choix");
                     }
                 case 2:
-                    log.info("choix niveux {} ", sub.getMenuLevel());
+//                    log.info("choix niveux {} ", sub.getMenuLevel());
                     select = Integer.parseInt(user_input);
                     sub.incrementMenuLevel();
                     if (select == 1 && sub.getSubParams().get("option1") == DEPOT) {
                         log.info("choix depot plus epargne ");
-                        String text1 = "Dépot sur votre compte épargne, veuillez saisir le montant";
+                        String text1 = "Dépot sur votre compte épargne à vue, veuillez saisir le montant";
                         sub.getSubParams().put("option2", EPARGNE);
                         return processUssd.moovLevel1DepotCompte(sub, text1);
                     } else if (select == 2 && sub.getSubParams().get("option1").equals(DEPOT)) {
@@ -231,8 +231,9 @@ public class UssdRessource {
                                 .append(" FCFA de votre compte ")
                                 .append(sub.getSubParams().get("option2"))
                                 .append(" sur votre compte Momo.\n")
-                                .append("Frais : 200 fcfa ")
-                                .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)));
+                                .append("Frais : 200 FCFA ")
+                                .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
+                                .append(" FCFA");
                         return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
                     } else if (sub.getSubParams().get("option1") == DEPOT) {
                         sub.setAmount(new BigDecimal(user_input));
@@ -342,7 +343,7 @@ public class UssdRessource {
 
 
                 case 4:
-                    log.info("processe");
+//                    log.info("processe");
                     sub.incrementMenuLevel();
                     if (sub.getSubParams().get("option1") == DEPOT) {
                         return processUssd.getMoovUssdResponseConfirm(user_input, sub);
@@ -354,7 +355,7 @@ public class UssdRessource {
                             if (processUssd.checkAccounAvailable(sub)) {
                                 oldSessions.put(sub.getMsisdn(), sub);
                                 processUssd.retraitProcess(sub);
-                                txt = "Retrait à partir du compte " + sub.getSubParams().get("option2") + " effectué avec succès..";
+                                txt = "Retrait à partir du compte " + sub.getSubParams().get("option2") + " en cours de traitement";
                             } else {
                                 txt = "Solde insuffisant";
                             }

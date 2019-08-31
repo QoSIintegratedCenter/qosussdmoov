@@ -13,7 +13,7 @@ public class Constants {
     public static final String TRANSFERT = "transfert";
     public static final String GESTION_ACCOUNT = "gestionaccount";
     public static final String OPERATION_TIERS = "operationtiers";
-    public static final String EPARGNE = "epargne";
+    public static final String EPARGNE = "epargne à vue";
     public static final String PLAN_TONTINE = "tontine";
     public static final String COURANT = "courant";
     public static final String DEMANDE_CREDIT = "demandecredit";

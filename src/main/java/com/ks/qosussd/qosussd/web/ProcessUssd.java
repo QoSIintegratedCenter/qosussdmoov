@@ -53,7 +53,7 @@ public class ProcessUssd {
 //        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(1);
         if (checkNumberExist(sub.getMsisdn())) {
-//            moovUssdResponse.setText("PADME \n Selectionner un numero puis appuyer sur envoyer");
+            moovUssdResponse.setText("Veuillez sélectionner une option :");
             moovUssdResponse.setScreenType("menu");
             moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
             Option option = new Option();
@@ -99,8 +99,8 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
         moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
-        moovUssdResponse.setScreenId(1);
-//        moovUssdResponse.setText("Selectionner un numero puis appuyer sur envoyer \n Type de compte");
+        moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
+        moovUssdResponse.setText("Dépot sur votre compte:");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
@@ -163,9 +163,9 @@ public class ProcessUssd {
                 .append(" FCFA de votre compte MoMo sur votre compte ")
                 .append(sub.getSubParams().get("option2"))
                 .append(", ")
-                .append("Frais : 200 fcfa, ")
+                .append("Frais : 200 FCFA, ")
                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
-                .append("\n Votre choix : ");
+                .append(" FCFA\n Votre choix : ");
       /*  StringBuilder stringBuilder2 = new StringBuilder();
         stringBuilder.append("Transfert de ")
                 .append(sub.getAmount())
@@ -254,7 +254,7 @@ public class ProcessUssd {
         moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
-        moovUssdResponse.setText("Votre choix");
+        moovUssdResponse.setText("Rétrait à partir de :");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
@@ -354,6 +354,7 @@ public class ProcessUssd {
 
     public MoovUssdResponse getMoovUssdResponseConfirm(String user_input, SubscriberInfo sub) {
         int select = Integer.parseInt(user_input);
+        String text = "Opération en cous de traitement";
         if (select == 1) {
             activeSessions.remove(sub.getMsisdn());
             oldSessions.put(sub.getMsisdn(), sub);
@@ -373,7 +374,7 @@ public class ProcessUssd {
                     sendMomoRequest(data);
                 }).start();
 
-                return endOperation("Merci de poursuivre l'operation avec momo");
+                return endOperation("Dépot sur le " + sub.getSubParams().get("option2") + " en cours de traitement");
             }
 
             if (sub.getSubParams().get("option4").equals("momo")) {
