@@ -364,7 +364,7 @@ public class UssdRessource {
                             return processUssd.endOperation(txt);
                         } else {
                             activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation("Retrait annulé");
+                            return processUssd.endOperation("Rétrait annulé");
                         }
                     } else if (sub.getSubParams().get("option1").equals(CREDIT)) {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
