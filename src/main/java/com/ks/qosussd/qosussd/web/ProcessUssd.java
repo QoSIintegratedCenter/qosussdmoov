@@ -64,7 +64,7 @@ public class ProcessUssd {
             option3.setValue("Rétrait");
             Option option4 = new Option();
             option4.setChoice("3.");
-            option4.setValue("Crédit");
+            option4.setValue("Pret");
             Option option2 = new Option();
             option2.setChoice("4.");
             option2.setValue("Transfert");
@@ -288,7 +288,7 @@ public class ProcessUssd {
         moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
-        moovUssdResponse.setText("Type de compte");
+        moovUssdResponse.setText("Veuillez sélectionner une option");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
@@ -296,10 +296,10 @@ public class ProcessUssd {
         option.setValue("Remboursement");
         Option option3 = new Option();
         option3.setChoice("2.");
-        option3.setValue("Demande de crédit");
+        option3.setValue("Demande de pret");
         Option option4 = new Option();
         option4.setChoice("3.");
-        option4.setValue("Etat du crédit");
+        option4.setValue("Etat du pret");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option);
         optionsType.getOption().add(option3);
@@ -313,17 +313,17 @@ public class ProcessUssd {
     public MoovUssdResponse moovLevel2Credit(SubscriberInfo sub) {
         Map infoCredit = getInfoCredit(sub);
         if (infoCredit == null || infoCredit.isEmpty()) {
-            return endOperation("Désolé ! Vous n'avez pas de crédit en cours");
+            return endOperation("Désolé ! Vous n'avez pas de pret en cours");
         }
         Option option = new Option();
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Votre choix", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Veuillez sélectionner une option", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         option.setChoice("1.");
         sub.getSubParams().put(Constants.REGURALISER, infoCredit.get("restePourSolde"));
-        sub.getSubParams().put(Constants.ECHEANCE, infoCredit.get("montantEcheance"));
-        option.setValue("Montant à payer pour régulariser : " + infoCredit.get("restePourSolde") + " FCFA");
+        sub.getSubParams().put(Constants.ECHEANCE, infoCredit.get("echeanceAVenir"));
+        option.setValue("Montant à payer pour régulariser : " + new BigDecimal(infoCredit.get("restePourSolde").toString()).intValue() + " FCFA");
         Option option3 = new Option();
         option3.setChoice("2.");
-        option3.setValue("Prochaine échéance : " + infoCredit.get("montantEcheance") + " FCFA ");
+        option3.setValue("Prochaine échéance : " + new BigDecimal(infoCredit.get("echeanceAVenir").toString()).intValue() + " FCFA ");
         Option option4 = new Option();
         option4.setChoice("3.");
         option4.setValue("Autre montant à payer");
@@ -384,7 +384,7 @@ public class ProcessUssd {
                     sendMomoRequest(data);
                 }).start();
 //                sendMomoRequest(data);
-                return endOperation("Merci de poursuivre l'operation avec momo");
+                return endOperation("Dépot sur compte courant pour remboursement de pret en cours de traitement");
             } else if (sub.getSubParams().get("option4").equals("padme")) {
                 log.info("Option epargne");
                 return remboursementParEpargne(sub);
@@ -445,14 +445,14 @@ public class ProcessUssd {
             transDatato.put("source", "INTERNE");
             RestTemplate restTemplate = new RestTemplate();
 //                    RestTemplate restTemplate1 = new RestTemplate();
-            log.info("from data: {} to data: {}", transData, transDatato);
+//            log.info("from data: {} to data: {}", transData, transDatato);
             try {
                 Map res = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transData, httpHeaders), Map.class).getBody();
                 Map res2 = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
 //                        log.info("Result from data: {} to data: {}", res, res2);
-                log.info("Transfert effectué avec succes");
+                log.info("Transfert effectué avec succes, de {} sur {}", res, res2);
                 activeSessions.remove(sub.getMsisdn());
-                return endOperation("Operation  effectuee avec succes.");
+                return endOperation("Dépot sur compte courant pour remboursement de pret effectuée avec succes.");
 
             } catch (Exception e) {
                 log.info("Erreur lors de la transfert " + e);

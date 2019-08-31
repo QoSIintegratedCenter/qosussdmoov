@@ -161,14 +161,14 @@ public class UssdRessource {
                         return processUssd.moovLevel1DepotCompte(sub, text1);
                     }
                     if (select == 1 && sub.getSubParams().get("option1") == CREDIT) {
-                        log.info("choix credi plus {} ", REMBOURSEMENT);
+                        log.info("choix credit plus {} ", REMBOURSEMENT);
                         sub.getSubParams().put("option2", REMBOURSEMENT);
                         return processUssd.moovLevel2Credit(sub);
                     }
                     if (select == 2 && sub.getSubParams().get("option1") == CREDIT) {
                         log.info("choix credi plus {} ", DEMANDE_CREDIT);
                         sub.getSubParams().put("option2", DEMANDE_CREDIT);
-                        String text = "Demande de crédit, veuillez saisir le montant sollicité";
+                        String text = "Demande de pret, veuillez saisir le montant sollicité";
                         return processUssd.enterAmount(sub, text);
                     }
                     if (select == 3 && sub.getSubParams().get("option1") == CREDIT) {
@@ -257,11 +257,11 @@ public class UssdRessource {
                             if (select == 3) {
                                 log.info("Credit rembousement autre montant");
                                 sub.getSubParams().put("option3", AUTRE_MONTANT);
-                                return processUssd.moovLevel1DepotCompte(sub, "Remboursement de crédit, veuillez saisir le montant a remboursé :");
+                                return processUssd.moovLevel1DepotCompte(sub, "Remboursement de pret, veuillez saisir le montant a remboursé :");
                             }
                         }
                         if ((sub.getSubParams().get("option2").equals(DEMANDE_CREDIT))) {
-                            String res = "Nous accusons reception de votre demande de credit. Un agent de PADME vous contactera sous peu. \n" +
+                            String res = "Nous accusons reception de votre demande de pret. Un agent de PADME vous contactera sous peu. \n" +
                                     "Nous vous remercions d’avoir utiliser le service push-pull de PADME.";
                             sub.setAmount(new BigDecimal(user_input));
                             SubscriberInfo finalSub = sub;
@@ -374,8 +374,8 @@ public class UssdRessource {
                                 StringBuilder stringBuilder = new StringBuilder();
                                 stringBuilder.append("Remboursement de ")
                                         .append(sub.getAmount())
-                                        .append(" FCFA, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                        .append("\nVotre choix");
+                                        .append(" FCFA, frais 200 FCFA \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append(" FCFA\nVotre choix");
 
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
@@ -502,7 +502,7 @@ public class UssdRessource {
                             sub.setAmount(new BigDecimal(user_input));
                             StringBuilder stringBuilder = new StringBuilder();
                             stringBuilder
-                                    .append("Credite de " + user_input + " fcfa le compte ")
+                                    .append("Credite de " + user_input + " FCFA le compte ")
                                     .append(sub.getSubParams().get("option3"))
                                     .append(" de ")
                                     .append(sub.getSubParams().get("TIERS_NAME"));
@@ -516,8 +516,8 @@ public class UssdRessource {
                                         .append(" FCFA ")
                                         .append("sur le compte de ")
                                         .append(sub.getSubParams().get("TIERS_NAME"))
-                                        .append(" frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                        .append("\nVotre choix");
+                                        .append(" frais 200 FCFA \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append(" FCFA\nVotre choix");
                                 return processUssd.momoConfirmOption(text1.toString(), sub);
                             } else {
                                 return processUssd.getMoovUssdResponseConfirm(user_input, sub);
