@@ -775,9 +775,9 @@ public class ProcessUssd {
 
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
-        optionsType.addOption(new Option(1, " Compte epargne"));
-        optionsType.addOption(new Option(2, "Compte plan tontine"));
-        optionsType.addOption(new Option(3, "Compte courant"));
+        optionsType.addOption(new Option("1.", "Compte epargne"));
+        optionsType.addOption(new Option("2.", "Compte plan tontine"));
+        optionsType.addOption(new Option("3.", "Compte courant"));
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }
@@ -795,8 +795,8 @@ public class ProcessUssd {
         String text = "Operations pour tiers";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
-        optionsType.addOption(new Option(1, "Depot sur compte de tiers"));
-        optionsType.addOption(new Option(2, "Remboursement sur compte de tiers"));
+        optionsType.addOption(new Option("1.", "Depot sur compte de tiers"));
+        optionsType.addOption(new Option("2.", "Remboursement sur compte de tiers"));
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }
@@ -842,6 +842,30 @@ public class ProcessUssd {
         } catch (Exception e) {
             log.error("" + e);
         }
+
+    }
+
+    public MoovUssdResponse soldAllAccount(SubscriberInfo sub) {
+        Map dataSolodeep = new HashMap();
+        Map dataSolodecr = new HashMap();
+
+
+        try {
+            dataSolodeep = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
+            dataSolodecr = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+        } catch (Exception e) {
+            log.info("Error lors de recupertation des solge");
+            return endOperation("Une erreur s'est produite");
+        }
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "form", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
+        OptionsType optionsType = new OptionsType();
+        optionsType.addOption(new Option("1.", "Compte epargne à vue : " + dataSolodeep.get("saldoCuenta") + " FCFA"));
+        optionsType.addOption(new Option("2.", "Compte courant : " + dataSolodecr.get("saldoCuenta") + " FCFA"));
+        moovUssdResponse.setOptions(optionsType);
+//        String text = "le solde de votre compte " + sub.getSubParams().get("option3") + " est de " + dataSolode.get("saldoCuenta") + " fcfa";
+        activeSessions.remove(sub.getMsisdn());
+
+        return moovUssdResponse;
 
     }
 }

@@ -199,7 +199,7 @@ public class UssdRessource {
                     if (select == 1 && sub.getSubParams().get("option1") == GESTION_ACCOUNT) {
                         log.info("choix gestion compte: solde ");
                         sub.getSubParams().put("option2", SOLDE);
-                        return processUssd.soldForAccount(sub, "sl", null);
+                        return processUssd.soldAllAccount(sub);
                     }
                     if (select == 2 && sub.getSubParams().get("option1") == GESTION_ACCOUNT) {
                         log.info("choix gestion compte: Terme condition ");
