@@ -512,7 +512,7 @@ public class ProcessUssd {
                     transData.put("monto", customer.getAmount());
                     transData.put("frais", 200);
                     transData.put("observation", "Retrait sur le compte " + sub.getSubParams().get("option3"));
-                    transData.put("typeOperation", "Retrait");
+                    transData.put("typeOperation", "Transfert");
                     transData.put("telefono", customer.getMsisdn());
                     transData.put("terminal", "MOOV USSD");
                     transData.put("montoNeto", customer.getAmount().add(new BigDecimal(200)));
@@ -528,7 +528,7 @@ public class ProcessUssd {
                     transDatato.put("monto", customer.getAmount());
                     transDatato.put("frais", 0);
                     transDatato.put("observation", "Depot sur le compte " + sub.getSubParams().get("option2"));
-                    transDatato.put("typeOperation", "Depot");
+                    transDatato.put("typeOperation", "Transfert");
                     transDatato.put("telefono", customer.getMsisdn());
                     transDatato.put("terminal", "MOOV USSD");
                     transDatato.put("montoNeto", customer.getAmount());
@@ -541,11 +541,11 @@ public class ProcessUssd {
                         Map res2 = restTemplate.exchange(getProp("transaction"), HttpMethod.POST, new HttpEntity<Map>(transDatato, httpHeaders), Map.class).getBody();
 //                        log.info("Result from data: {} to data: {}", res, res2);
                         log.info("Transfert effectué avec succes");
-                        return endOperation("Operatio  effectuee avec succes.");
+                        return endOperation("Transfert  effectuée avec succes.");
 
                     } catch (Exception e) {
                         log.info("Erreur lors de la transfert " + e);
-                        return endOperation("Un erreur s est produite, reesayer");
+                        return endOperation("Un erreur s est produite, réesayer");
                     }
                 } else endOperation("Solde insufissant");
 
@@ -592,15 +592,15 @@ public class ProcessUssd {
     public String infoCredit(SubscriberInfo sub) {
         Map infoCredit = getInfoCredit(sub);
         if (infoCredit == null || infoCredit.isEmpty()) {
-            return "Désolé ! Vous n'avez pas de crédit en cours";
+            return "Désolé ! Vous n'avez pas de pret en cours";
         }
         StringBuilder builder = new StringBuilder();
         Timestamp timestamp = new Timestamp(new Long(infoCredit.get("dateDerniereEcheance").toString()));
 
-        builder.append("Etat du crédit :\n" +
+        builder.append("Etat du pret :\n" +
                 "\n" +
                 "Montant du crédit : " + infoCredit.get("montoDesembolso") + "\n" +
-                "Montant échéance : " + infoCredit.get("montantEcheance") + "\n" +
+                "Montant échéance : " + infoCredit.get("echeanceAVenir") + "\n" +
                 "Montant impayé : " + infoCredit.get("montantImpaye") + "\n" +
                 "Reste à solder : " + infoCredit.get("restePourSolde") + "\n" +
                 "Dernière échéance : " + timestamp.toLocalDateTime().format(dateTimeFormatter));
@@ -620,10 +620,10 @@ public class ProcessUssd {
         try {
 //            System.out.println(getProp("pamde.check_client") + phoneNumber);
             res = restTemplate.getForObject(getProp("infocredit") + phoneNumber, Map.class);
-            log.info("Get credit infos : {}", res);
+            log.info("Get pret infos : {}", res);
             return res;
         } catch (Exception e) {
-            log.error("Error to get infos credit : {}", e);
+            log.error("Error to get infos pret : {}", e);
             return res;
         }
     }
@@ -708,7 +708,7 @@ public class ProcessUssd {
      * @return
      */
     public MoovUssdResponse moovLevel1Transfert(SubscriberInfo sub) {
-        String text = "Votre choix ";
+        String text = "Transfert sur votre compte";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         Option option1 = new Option();
         option1.setChoice("1.");
@@ -716,11 +716,11 @@ public class ProcessUssd {
         Option option2 = new Option();
         option2.setChoice("2.");
         option2.setValue("Courant");
-        Option option3 = new Option("3.", "Compte tiers a PADME");
+//        Option option3 = new Option("3.", "Compte tiers a PADME");
         OptionsType optionsType = new OptionsType();
         optionsType.getOption().add(option1);
         optionsType.getOption().add(option2);
-        optionsType.addOption(option3);
+//        optionsType.addOption(option3);
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }
@@ -735,7 +735,7 @@ public class ProcessUssd {
         option2.setValue("Courant");
         OptionsType optionsType = new OptionsType();
         if (evp.equals(EPARGNE)) {
-            text = "Transfert sur compte épargne à partir de votre compte";
+            text = "Transfert sur compte épargne à vue à partir de votre compte";
             optionsType.getOption().add(option2);
         } else if (evp.equals(COURANT)) {
             text = "Transfert sur compte courant à partir de votre compte";
@@ -743,7 +743,7 @@ public class ProcessUssd {
         } else {
             optionsType.getOption().add(option1);
             optionsType.addOption(new Option("2.", "Courant"));
-            optionsType.addOption(new Option("3.", "Plan tontine"));
+//            optionsType.addOption(new Option("3.", "Plan tontine"));
         }
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         moovUssdResponse.setOptions(optionsType);

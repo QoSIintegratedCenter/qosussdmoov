@@ -190,12 +190,12 @@ public class UssdRessource {
 
                         return processUssd.fromAccoundTransfert(COURANT, sub);
                     }
-                    if (select == 3 && sub.getSubParams().get("option1") == TRANSFERT) {
+                    /*if (select == 3 && sub.getSubParams().get("option1") == TRANSFERT) {
                         log.info("choix transfert: compte tiers ");
                         sub.getSubParams().put("option2", COMPTE_TIERS);
 
                         return processUssd.toAccountTransfertTiers(sub);
-                    }
+                    }*/
                     if (select == 1 && sub.getSubParams().get("option1") == GESTION_ACCOUNT) {
                         log.info("choix gestion compte: solde ");
                         sub.getSubParams().put("option2", SOLDE);
@@ -402,15 +402,15 @@ public class UssdRessource {
                         StringBuilder text = new StringBuilder();
                         log.info("option 2 {} , option 3 {}", sub.getSubParams().get("option2"), sub.getSubParams().get("option3"));
 
-                        text.append("Transfert de ")
+                        text.append("Autorisez-vous le transfert de ")
                                 .append(user_input)
-                                .append(" Fcfa ")
-                                .append("du compte ")
+                                .append(" FCFA ")
+                                .append("de votre compte ")
                                 .append(sub.getSubParams().get("option3"))
                                 .append(" sur votre compte ")
                                 .append(sub.getSubParams().get("option2"))
-                                .append(" FCFA, frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                .append("\nVotre choix");
+                                .append(" ?, frais 200 FCFA \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                .append(" FCFA\nVotre choix");
                         return processUssd.momoConfirmOption(text.toString(), sub);
                     }
                     if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
