@@ -132,14 +132,14 @@ public class ApiConnect {
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
         }
-        System.out.println(LocalDateTime.now().toString());
+//        System.out.println(LocalDateTime.now().toString());
 
 
         transData.put("origine", customer.getMsisdn());
         transData.put("codCuenta", accountInfo.get("codCuenta"));
         transData.put("refTransQos", ref);
         transData.put("estPrisEnCompte", 0);
-        transData.put("fecha", LocalDateTime.now().toString());
+        transData.put("fecha", LocalDateTime.now().minusHours(1).toString());
         transData.put("tipoTrans", tipoTrans);
         transData.put("monto", customer.getAmount());
         transData.put("frais", 200);

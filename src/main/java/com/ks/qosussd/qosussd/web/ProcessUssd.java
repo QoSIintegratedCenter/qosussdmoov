@@ -51,6 +51,7 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = new MoovUssdResponse();
 //        moovUssdResponse.setBackLink(1);
 //        moovUssdResponse.setHomeLink(0);
+//        System.out.println("date  ..... "+ LocalDateTime.now());
         moovUssdResponse.setScreenId(1);
         if (checkNumberExist(sub.getMsisdn())) {
             moovUssdResponse.setText("Veuillez sélectionner une option :");
@@ -414,7 +415,7 @@ public class ProcessUssd {
         Map toaccoount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
 //        log.info("Rm compare {} ", new BigDecimal(accoount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue());
         if (new BigDecimal(accoount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= 2700) {
-            LocalDateTime now = LocalDateTime.now();
+            LocalDateTime now = LocalDateTime.now().minusHours(1);
             Map transData = new HashMap();
             Map transDatato = new HashMap();
             String ref = randomAlphaNumeric();
@@ -507,7 +508,7 @@ public class ProcessUssd {
             }
             if (fromAccount != null) {
                 if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= compareValue) {
-                    LocalDateTime now = LocalDateTime.now();
+                    LocalDateTime now = LocalDateTime.now().minusHours(1);
                     transData.put("origine", customer.getMsisdn());
                     transData.put("codCuenta", fromAccount.get("codCuenta"));
                     transData.put("refTransQos", ref);
@@ -831,7 +832,7 @@ public class ProcessUssd {
         }
         */
         data.put("CodSolicitud", "SOL-099-" + randomAlphaNumeric3());
-        data.put("FechaSolicitud", LocalDateTime.now().format(dateTimeFormatter1).toString());
+        data.put("FechaSolicitud", LocalDateTime.now().minusHours(1).toString());
         data.put("MontoSolicitado", sub.getAmount());
         data.put("CodSistema", "AH");
         data.put("observacion", "Demande de pret");
