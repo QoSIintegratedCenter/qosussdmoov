@@ -373,8 +373,14 @@ public class ProcessUssd {
                     log.info("deposite in backgroud deposite");
                     sendMomoRequest(data);
                 }).start();
-
-                return endOperation("Dépot sur le " + sub.getSubParams().get("option2") + " en cours de traitement");
+                String texta = "Dépot sur le compte " + sub.getSubParams().get("option2") + " en cours de traitement";
+                if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
+                    texta = "Dépot sur le compte " + sub.getSubParams().get("option3") + " de tiers en cours de traitement";
+                }
+                if (sub.getSubParams().get("option2").equals(REMBOURSEMENT_TIERS)) {
+                    texta = "Dépot sur le compte courant de tiers pour rembousement de pret en cours de traitement";
+                }
+                return endOperation(texta);
             }
 
             if (sub.getSubParams().get("option4").equals("momo")) {
@@ -421,7 +427,7 @@ public class ProcessUssd {
             transData.put("tipoTrans", 1);
             transData.put("monto", sub.getAmount());
             transData.put("frais", 200);
-            transData.put("observation", "Retrait du compte épargne pour remboursement de crédit");
+            transData.put("observation", "Retrait du compte épargne pour remboursement de pret");
             transData.put("typeOperation", "Retrait");
             transData.put("telefono", sub.getMsisdn());
             transData.put("terminal", "MOOV USSD");
@@ -437,7 +443,7 @@ public class ProcessUssd {
             transDatato.put("tipoTrans", 2);
             transDatato.put("monto", sub.getAmount());
             transDatato.put("frais", 0);
-            transDatato.put("observation", "Dépôt sur compte courant pour remboursement de crédit");
+            transDatato.put("observation", "Dépôt sur compte courant pour remboursement de pret");
             transDatato.put("typeOperation", "Depot");
             transDatato.put("telefono", sub.getMsisdn());
             transDatato.put("terminal", "MOOV USSD");
@@ -776,8 +782,8 @@ public class ProcessUssd {
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
         optionsType.addOption(new Option("1.", "Compte epargne"));
-        optionsType.addOption(new Option("2.", "Compte plan tontine"));
-        optionsType.addOption(new Option("3.", "Compte courant"));
+        optionsType.addOption(new Option("2.", "Compte courant"));
+        optionsType.addOption(new Option("3.", "Compte plan tontine"));
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }
@@ -828,19 +834,19 @@ public class ProcessUssd {
         data.put("FechaSolicitud", LocalDateTime.now().format(dateTimeFormatter1).toString());
         data.put("MontoSolicitado", sub.getAmount());
         data.put("CodSistema", "AH");
-        data.put("observacion", "Demande de credit");
+        data.put("observacion", "Demande de pret");
         data.put("CodCuenta", fromAccount.get("codCuenta"));
         data.put("RefTransQos", randomAlphaNumeric());
         data.put("Terminal", "MOOV USSD");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "Application/json");
-        log.info("demande credit data: {}", data);
+//        log.info("demande credit data: {}", data);
         RestTemplate restTemplate = new RestTemplate();
         try {
             Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();
-            log.info("demande succes");
+            log.info("demande succes {}", res);
         } catch (Exception e) {
-            log.error("" + e);
+            log.error("Erreor lors du demande de pret" + e);
         }
 
     }

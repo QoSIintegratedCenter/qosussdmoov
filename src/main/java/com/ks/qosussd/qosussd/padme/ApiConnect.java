@@ -111,7 +111,7 @@ public class ApiConnect {
             type = "Depot";
             tipoTrans = "2";
             ref = (String) map.get("transref");
-            observation = "Dépôt sur compte courant de tiers pour remboursement de crédit";
+            observation = "Dépôt sur compte courant de tiers pour remboursement de pret";
             transData.put("codSistema", "CA");
             accountInfo = getAccountInfo(getProp("operation_account") + customer.getSubParams().get("PHONE_TIERS"));
 
@@ -132,10 +132,11 @@ public class ApiConnect {
                 accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
             }
         }
+        System.out.println(LocalDateTime.now().toString());
+
 
         transData.put("origine", customer.getMsisdn());
         transData.put("codCuenta", accountInfo.get("codCuenta"));
-
         transData.put("refTransQos", ref);
         transData.put("estPrisEnCompte", 0);
         transData.put("fecha", LocalDateTime.now().toString());
@@ -198,7 +199,7 @@ public class ApiConnect {
             log.info("Get infos : {}", res);
             return res;
         } catch (Exception e) {
-            log.error("Error to get infos credit : {}", e);
+            log.error("Error to get infos pret : {}", e);
             return res;
         }
     }
@@ -222,7 +223,7 @@ public class ApiConnect {
             }
 
         } catch (Exception e) {
-            log.error("Error to get infos credit : {}", e);
+            log.error("Error to get infos pret : {}", e);
 
         }
     }

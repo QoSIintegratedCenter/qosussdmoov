@@ -325,17 +325,19 @@ public class UssdRessource {
                                 sub.getSubParams().put("TIERS_NAME", accounInfo.get("nombreCompleto"));
                                 return processUssd.soldForAccount(sub, "dp", accounInfo);
                             } else {
-                                return processUssd.endOperation("Désolé ! Le tier ne dispose pas de compte n ");
+                                activeSessions.remove(sub.getMsisdn());
+                                return processUssd.endOperation("Désolé ! Le tier ne dispose pas de compte ");
                             }
                         } else {
                             log.info("tiers phone number {}", user_input);
                             Map accounInfo = new ApiConnect().getAccountInfo(getProp("infoaccount") + "229" + user_input);
-                            if (!accounInfo.isEmpty()) {
+                            if (accounInfo != null && !accounInfo.isEmpty()) {
                                 sub.getSubParams().put("PHONE_TIERS", "229" + user_input);
                                 sub.getSubParams().put("TIERS_NAME", accounInfo.get("nombreCompleto"));
                                 return processUssd.moovLevel2Credit(sub);
 
                             } else {
+                                activeSessions.remove(sub.getMsisdn());
                                 return processUssd.endOperation("Désolé ! Le tiers sélectionné ne dispose pas de compte courant");
                             }
                         }
@@ -416,8 +418,32 @@ public class UssdRessource {
                     if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
                         if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
                             // selection de compte
+                            select = Integer.parseInt(user_input);
                             getAccountSelectOption(sub);
-                            return processUssd.enterAmount(sub, "Dépot sur le compte courant d'un tiers, veuillez saisir le montant");
+                            if (user_input.equals("3")) {
+                                activeSessions.remove(msisdn);
+                                return processUssd.endOperation("Désolé ! Ce produit n'est pas encore disponible");
+                            } else if (user_input.equals("1")) {
+                                Map accounInfo = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getSubParams().get("PHONE_TIERS"));
+                                if (accounInfo != null && !accounInfo.isEmpty()) {
+                                    return processUssd.enterAmount(sub, "Dépot sur le compte " + sub.getSubParams().get("option3") + " d'un tiers, veuillez saisir le montant");
+
+                                } else {
+                                    activeSessions.remove(sub.getMsisdn());
+                                    return processUssd.endOperation("Désolé ! Le tiers sélectionné ne dispose pas de compte epargne à vue");
+                                }
+
+                            } else {
+                                Map accounInfo = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getSubParams().get("PHONE_TIERS"));
+                                if (accounInfo != null && !accounInfo.isEmpty()) {
+                                    return processUssd.enterAmount(sub, "Dépot sur le compte " + sub.getSubParams().get("option3") + " d'un tiers, veuillez saisir le montant");
+
+                                } else {
+                                    activeSessions.remove(sub.getMsisdn());
+                                    return processUssd.endOperation("Désolé ! Le tiers sélectionné ne dispose pas de compte courant");
+                                }
+                            }
+
                         } else {
                             System.out.println(user_input);
                             select = Integer.parseInt(user_input);
@@ -426,7 +452,7 @@ public class UssdRessource {
                             if (select == 1) {
                                 log.info("Credit rembousement regulariser");
                                 sub.getSubParams().put("option3", REGURALISER);
-                                sub.setAmount(new BigDecimal((double) sub.getSubParams().get(REGURALISER)));
+                                sub.setAmount(new BigDecimal(sub.getSubParams().get(REGURALISER).toString()));
 
                                 text1.append("Remboursement de ")
                                         .append(sub.getAmount())
@@ -502,7 +528,7 @@ public class UssdRessource {
                             sub.setAmount(new BigDecimal(user_input));
                             StringBuilder stringBuilder = new StringBuilder();
                             stringBuilder
-                                    .append("Credite de " + user_input + " FCFA le compte ")
+                                    .append("Credité de " + user_input + " FCFA le compte ")
                                     .append(sub.getSubParams().get("option3"))
                                     .append(" de ")
                                     .append(sub.getSubParams().get("TIERS_NAME"));
@@ -544,6 +570,10 @@ public class UssdRessource {
                     }
                     if (sub.getSubParams().get("option1").equals(OPERATION_TIERS)) {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT_TIERS)) {
+                            return processUssd.getMoovUssdResponseConfirm(user_input, sub);
+                        }
+                        if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
+
                             return processUssd.getMoovUssdResponseConfirm(user_input, sub);
                         }
                     }
