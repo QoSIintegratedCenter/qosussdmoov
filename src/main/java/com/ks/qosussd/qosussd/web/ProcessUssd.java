@@ -319,9 +319,9 @@ public class ProcessUssd {
         Option option = new Option();
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Veuillez sélectionner une option", "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         option.setChoice("1.");
-        sub.getSubParams().put(Constants.REGURALISER, infoCredit.get("restePourSolde"));
+        sub.getSubParams().put(Constants.REGURALISER, infoCredit.get("montantImpaye"));
         sub.getSubParams().put(Constants.ECHEANCE, infoCredit.get("echeanceAVenir"));
-        option.setValue("Montant à payer pour régulariser : " + new BigDecimal(infoCredit.get("restePourSolde").toString()).intValue() + " FCFA");
+        option.setValue("Montant à payer pour régulariser : " + new BigDecimal(infoCredit.get("montantImpaye").toString()).intValue() + " FCFA");
         Option option3 = new Option();
         option3.setChoice("2.");
         option3.setValue("Prochaine échéance : " + new BigDecimal(infoCredit.get("echeanceAVenir").toString()).intValue() + " FCFA ");
@@ -768,8 +768,8 @@ public class ProcessUssd {
         String text = "Gestion des comptes: ";
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse(text, "menu", TypeOperation.CONTINUE.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
-        optionsType.addOption(new Option(1, "Solde"));
-        optionsType.addOption(new Option(2, "Termes et condition"));
+        optionsType.addOption(new Option("1.", "Solde"));
+        optionsType.addOption(new Option("2.", "Termes et condition"));
         moovUssdResponse.setOptions(optionsType);
         return moovUssdResponse;
     }

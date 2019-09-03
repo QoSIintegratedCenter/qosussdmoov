@@ -326,7 +326,7 @@ public class UssdRessource {
                                 return processUssd.soldForAccount(sub, "dp", accounInfo);
                             } else {
                                 activeSessions.remove(sub.getMsisdn());
-                                return processUssd.endOperation("Désolé ! Le tier ne dispose pas de compte ");
+                                return processUssd.endOperation("Désolé ! Le tiers ne dispose pas de compte ");
                             }
                         } else {
                             log.info("tiers phone number {}", user_input);
@@ -411,7 +411,7 @@ public class UssdRessource {
                                 .append(sub.getSubParams().get("option3"))
                                 .append(" sur votre compte ")
                                 .append(sub.getSubParams().get("option2"))
-                                .append(" ?, frais 200 FCFA \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                .append(" ?, frais 200 FCFA, Total : " + sub.getAmount().add(new BigDecimal(200)))
                                 .append(" FCFA\nVotre choix");
                         return processUssd.momoConfirmOption(text.toString(), sub);
                     }
@@ -459,8 +459,8 @@ public class UssdRessource {
                                         .append(" FCFA ")
                                         .append("pour le compte de ")
                                         .append(sub.getSubParams().get("TIERS_NAME"))
-                                        .append(" ,frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                        .append(" \n Votre choix");
+                                        .append(" ,frais 200 FCFA Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append("FCFA \nVotre choix");
                                 return processUssd.momoConfirmOption(text1.toString(), sub);
                             } else if (select == 2) {
                                 sub.getSubParams().put("option3", ECHEANCE);
@@ -471,8 +471,8 @@ public class UssdRessource {
                                         .append(" FCFA ")
                                         .append("sur le compte de ")
                                         .append(sub.getSubParams().get("TIERS_NAME"))
-                                        .append(" frais 200 fcfa \n Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                        .append(" \n Appuyer sur");
+                                        .append(" frais 200 FCFA \n Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                        .append(" FCFA \n Votre choix");
                                 return processUssd.momoConfirmOption(text1.toString(), sub);
                             } else if (select == 3) {
                                 log.info("Credit rembousement autre montant");
@@ -499,9 +499,9 @@ public class UssdRessource {
                                 StringBuilder stringBuilder = new StringBuilder();
                                 stringBuilder.append("Remboursement de ")
                                         .append(sub.getAmount())
-                                        .append(" fcfa, frais 200 fcfa Total : ")
+                                        .append(" FCFA, frais 200 FCFA Total : ")
                                         .append(sub.getAmount().add(new BigDecimal(200)))
-                                        .append(" fcfa.");
+                                        .append(" FCFA.");
 
                                 if (select == 1) {
                                     log.info("Credit rembousement option momo");
