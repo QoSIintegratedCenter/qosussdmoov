@@ -62,7 +62,7 @@ public class ProcessUssd {
             option.setValue("Dépot");
             Option option3 = new Option();
             option3.setChoice("2.");
-            option3.setValue("Rétrait");
+            option3.setValue("Retrait");
             Option option4 = new Option();
             option4.setChoice("3.");
             option4.setValue("Pret");
@@ -255,7 +255,7 @@ public class ProcessUssd {
         moovUssdResponse.setBackLink(0);
 //        moovUssdResponse.setHomeLink(0);
         moovUssdResponse.setScreenId(Integer.parseInt(sub.getScreenId()));
-        moovUssdResponse.setText("Rétrait à partir de :");
+        moovUssdResponse.setText("Retrait à partir de :");
         moovUssdResponse.setScreenType("menu");
         moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         Option option = new Option();
