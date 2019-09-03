@@ -412,7 +412,7 @@ public class UssdRessource {
                                 .append(" sur votre compte ")
                                 .append(sub.getSubParams().get("option2"))
                                 .append(" ?, frais 200 FCFA, Total : " + sub.getAmount().add(new BigDecimal(200)))
-                                .append(" FCFA\nVotre choix");
+                                .append(" FCFA");
                         return processUssd.momoConfirmOption(text.toString(), sub);
                     }
                     if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {

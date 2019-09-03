@@ -459,7 +459,7 @@ public class ProcessUssd {
 //                        log.info("Result from data: {} to data: {}", res, res2);
                 log.info("Transfert effectué avec succes, de {} sur {}", res, res2);
                 activeSessions.remove(sub.getMsisdn());
-                return endOperation("Dépot sur compte courant pour remboursement de pret effectuée avec succes.");
+                return endOperation("Dépot sur compte courant pour remboursement de pret effectué avec succes.");
 
             } catch (Exception e) {
                 log.info("Erreur lors de la transfert " + e);
@@ -564,7 +564,7 @@ public class ProcessUssd {
         } else {
             // add check padme verifie id
             activeSessions.remove(sub.getMsisdn());
-            return endOperation("Operation annuler avec succes");
+            return endOperation("Operation annulée avec succes");
         }
         return endOperation("Un erreur s est produite, reesayer");
 
