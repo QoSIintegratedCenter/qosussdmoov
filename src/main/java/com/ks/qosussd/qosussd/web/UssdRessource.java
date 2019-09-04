@@ -234,7 +234,16 @@ public class UssdRessource {
                                 .append("Frais : 200 FCFA ")
                                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
                                 .append(" FCFA");
-                        return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
+                        if (sub.getAmount().intValue() < 200) {
+                            String text1 = "Désolé ! Vous ne pouvez effectuer un retrait d'un montant inférieur à 200 FCFA";
+//                            sub.setMenuLevel(sub.getMenuLevel() - 1);
+//                            return processUssd.moovLevel1DepotCompte(sub, text1);
+                            activeSessions.remove(sub.getMsisdn());
+                            return processUssd.endOperation(text1);
+                        } else {
+
+                            return processUssd.momoConfirmOption(stringBuilder.toString(), sub);
+                        }
                     } else if (sub.getSubParams().get("option1") == DEPOT) {
                         sub.setAmount(new BigDecimal(user_input));
                         sub.setUserInput(user_input);
