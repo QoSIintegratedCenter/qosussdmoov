@@ -359,6 +359,9 @@ public class ProcessUssd {
         if (select == 1) {
             activeSessions.remove(sub.getMsisdn());
             oldSessions.put(sub.getMsisdn(), sub);
+            if(sub.getAmount().intValue()<= 0){
+                return endOperation("Désolé ! Vous ne pouvez pas effectuer une transaction de 0 FCFA");
+            }
             Map data = new HashMap();
             data.put("msisdn", sub.getMsisdn());
             data.put("firstname", "padme");
