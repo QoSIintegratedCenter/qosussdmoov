@@ -115,6 +115,14 @@ public class ApiConnect {
             transData.put("codSistema", "CA");
             accountInfo = getAccountInfo(getProp("operation_account") + customer.getSubParams().get("PHONE_TIERS"));
 
+        } else if (customer.getSubParams().get("option1").equals(CREDIT)) {
+            type = "Depot";
+            tipoTrans = "2";
+            ref = (String) map.get("transref");
+            observation = "Dépôt sur compte courant pour remboursement de pret";
+            transData.put("codSistema", "CA");
+            accountInfo = getAccountInfo(getProp("operation_account") + customer.getMsisdn());
+
         } else if (customer.getSubParams().get("option1").equals(RETRAIT)) {
             log.info("Retrait Option transation");
             type = "Retrait";
