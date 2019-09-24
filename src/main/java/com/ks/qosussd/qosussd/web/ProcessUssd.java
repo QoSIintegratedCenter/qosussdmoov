@@ -472,7 +472,7 @@ public class ProcessUssd {
 
         } else {
             activeSessions.remove(sub.getMsisdn());
-            return endOperation("Solde insufissant.");
+            return endOperation("Solde insufisant.");
         }
 
     }
@@ -557,10 +557,12 @@ public class ProcessUssd {
                         log.info("Erreur lors de la transfert " + e);
                         return endOperation("Un erreur s est produite, réesayer");
                     }
-                } else endOperation("Solde insufissant");
+                } else {
+                    endOperation("Solde insufisant");
+                }
 
             } else {
-                return endOperation("Un erreur s est produite, reesayer");
+                return endOperation("Un erreur s'est produite, reesayer");
             }
 
 
