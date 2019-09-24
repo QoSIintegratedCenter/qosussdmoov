@@ -859,19 +859,19 @@ public class ProcessUssd {
         Map dataSolodeep = new HashMap();
         Map dataSolodecr = new HashMap();
 
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "form", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
 
         try {
             dataSolodeep = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
             dataSolodecr = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+            OptionsType optionsType = new OptionsType();
+            optionsType.addOption(new Option("1.", "Compte epargne à vue : " + dataSolodeep.get("saldoCuenta") + " FCFA"));
+            optionsType.addOption(new Option("2.", "Compte courant : " + dataSolodecr.get("saldoCuenta") + " FCFA"));
+            moovUssdResponse.setOptions(optionsType);
         } catch (Exception e) {
             log.info("Error lors de recupertation des solge");
             return endOperation("Une erreur s'est produite");
         }
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "form", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
-        OptionsType optionsType = new OptionsType();
-        optionsType.addOption(new Option("1.", "Compte epargne à vue : " + dataSolodeep.get("saldoCuenta") + " FCFA"));
-        optionsType.addOption(new Option("2.", "Compte courant : " + dataSolodecr.get("saldoCuenta") + " FCFA"));
-        moovUssdResponse.setOptions(optionsType);
 //        String text = "le solde de votre compte " + sub.getSubParams().get("option3") + " est de " + dataSolode.get("saldoCuenta") + " fcfa";
         activeSessions.remove(sub.getMsisdn());
 
