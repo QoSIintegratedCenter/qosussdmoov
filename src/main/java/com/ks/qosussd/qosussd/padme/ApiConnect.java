@@ -1,6 +1,7 @@
 package com.ks.qosussd.qosussd.padme;
 
 import com.ks.qosussd.qosussd.core.SubscriberInfo;
+import com.ks.qosussd.qosussd.domaine.PadmeData;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -13,9 +14,7 @@ import org.springframework.web.client.RestTemplate;
 import java.math.BigDecimal;
 import java.time.Duration;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ScheduledFuture;
 
 import static com.ks.qosussd.qosussd.core.Constants.*;
@@ -208,6 +207,29 @@ public class ApiConnect {
             return res;
         } catch (Exception e) {
             log.error("Error to get infos pret : {}", e);
+            return res;
+        }
+    }
+
+    public List<PadmeData> getAccountInfoList(String url) {
+        System.out.println(url);
+        RestTemplate restTemplate = new RestTemplate();
+        List<PadmeData> res = new ArrayList<>();
+        PadmeData[] objects = null;
+        try {
+//
+            objects = restTemplate.getForObject(url, PadmeData[].class);
+            for (PadmeData dt : objects) {
+                PadmeData p = new PadmeData();
+                p.setCodCuenta(dt.getCodCuenta());
+                p.setCodUsuario(dt.getCodUsuario());
+                p.setSaldoCuenta(dt.getSaldoCuenta());
+                res.add(p);
+            }
+            log.info("Get list infos : {}", res);
+            return res;
+        } catch (Exception e) {
+            log.error("Error to get infos list : {}", e);
             return res;
         }
     }

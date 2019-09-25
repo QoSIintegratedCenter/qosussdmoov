@@ -1,6 +1,7 @@
 package com.ks.qosussd.qosussd.web;
 
 import com.ks.qosussd.qosussd.core.*;
+import com.ks.qosussd.qosussd.domaine.PadmeData;
 import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
@@ -13,7 +14,9 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -835,7 +838,7 @@ public class ProcessUssd {
         }
         */
         data.put("CodSolicitud", "SOL-099-" + randomAlphaNumeric3());
-        data.put("FechaSolicitud", LocalDateTime.now().minusHours(1).toString());
+//        data.put("FechaSolicitud", LocalDateTime.now().minusHours(1).toString());
         data.put("MontoSolicitado", sub.getAmount());
         data.put("CodSistema", "AH");
         data.put("observacion", "Demande de pret");
@@ -844,7 +847,7 @@ public class ProcessUssd {
         data.put("Terminal", "MOOV USSD");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "Application/json");
-//        log.info("demande credit data: {}", data);
+        log.info("demande credit data: {}", data);
         RestTemplate restTemplate = new RestTemplate();
         try {
             Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();
@@ -856,21 +859,33 @@ public class ProcessUssd {
     }
 
     public MoovUssdResponse soldAllAccount(SubscriberInfo sub) {
-        Map dataSolodeep = new HashMap();
-        Map dataSolodecr = new HashMap();
-
-
+//        Map dataSolodeep = new HashMap();
+//        Map dataSolodecr = new HashMap();
+        RestTemplate req = new RestTemplate();
+        List<PadmeData> mapList = new ArrayList<>();
+        String soldeEpagne = "";
+        String soldecourant = "";
         try {
-            dataSolodeep = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
-            dataSolodecr = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
+            mapList = new ApiConnect().getAccountInfoList(getProp("list_account_client_url") + sub.getMsisdn());
+//            dataSolodeep = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
+//            dataSolodecr = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
         } catch (Exception e) {
             log.info("Error lors de recupertation des solge");
             return endOperation("Une erreur s'est produite");
         }
+        for (PadmeData d : mapList) {
+            if (d.getCodCuenta().substring(4, 7).equals("103")) {
+                soldeEpagne = d.getSaldoCuenta();
+            } else {
+                soldecourant = d.getSaldoCuenta();
+            }
+        }
+
+
         MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "form", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
-        optionsType.addOption(new Option("1.", "Compte epargne à vue : " + dataSolodeep.get("saldoCuenta") + " FCFA"));
-        optionsType.addOption(new Option("2.", "Compte courant : " + dataSolodecr.get("saldoCuenta") + " FCFA"));
+        optionsType.addOption(new Option("1.", "Compte epargne à vue : " + soldeEpagne + " FCFA"));
+        optionsType.addOption(new Option("2.", "Compte courant : " + soldecourant + " FCFA"));
         moovUssdResponse.setOptions(optionsType);
 //        String text = "le solde de votre compte " + sub.getSubParams().get("option3") + " est de " + dataSolode.get("saldoCuenta") + " fcfa";
         activeSessions.remove(sub.getMsisdn());
