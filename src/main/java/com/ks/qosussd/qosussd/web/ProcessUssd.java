@@ -362,7 +362,7 @@ public class ProcessUssd {
         if (select == 1) {
             activeSessions.remove(sub.getMsisdn());
             oldSessions.put(sub.getMsisdn(), sub);
-            if(sub.getAmount().intValue()<= 0){
+            if (sub.getAmount().intValue() <= 0) {
                 return endOperation("Désolé ! Vous ne pouvez pas effectuer une transaction de 0 FCFA");
             }
             Map data = new HashMap();
@@ -482,41 +482,61 @@ public class ProcessUssd {
 
     public MoovUssdResponse transfertProcess(String user_input, SubscriberInfo sub) {
         int select = Integer.parseInt(user_input);
-        log.info("Transfert process");
+        log.info("Transfert process" + select);
         if (select == 1) {
             SubscriberInfo customer = sub;
             activeSessions.remove(sub.getMsisdn());
             oldSessions.put(sub.getMsisdn(), sub);
             HttpHeaders httpHeaders = new HttpHeaders();
             httpHeaders.set("Content-type", "Application/json");
-            Map fromAccount = new HashMap();
-            Map toAccount = new HashMap();
+            PadmeData fromAccount = null;
+            PadmeData toAccount = null;
             Map transData = new HashMap();
             String ref = randomAlphaNumeric();
             int compareValue = 0;
             Map transDatato = new HashMap();
-            if (sub.getSubParams().get("option3").equals(EPARGNE)) {
-                log.info("from epargne");
-                compareValue = 2700;
-                fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
-                toAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
-                transData.put("codSistema", "AH");
-                transDatato.put("codSistema", "CA");
+
+            List<PadmeData> mapList = new ApiConnect().getAccountInfoList(getProp("list_account_client_url") + sub.getMsisdn());
+
+            for (PadmeData d : mapList) {
+                if (sub.getSubParams().get("option3").equals(EPARGNE)) {
+                    log.info("from epargne");
+                    compareValue = 2700;
+                    if (d.getCodCuenta().substring(4, 7).equals("103")) {
+                        fromAccount = d;
+                    } else {
+                        toAccount = d;
+                    }
+//                    fromAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
+//                    toAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
+                    transData.put("codSistema", "AH");
+                    transDatato.put("codSistema", "CA");
 
 
-            } else {
-                log.info("from courant");
-                fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
-                toAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
-                transData.put("codSistema", "CA");
-                transDatato.put("codSistema", "AH");
+                } else {
+                    log.info("from courant");
+                    if (d.getCodCuenta().substring(4, 7).equals("103")) {
+                        toAccount = d;
+                    } else {
+                        fromAccount = d;
+                    }
+//                    fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + customer.getMsisdn());
+//                    toAccount = new ApiConnect().getAccountInfo(getProp("epargne_account") + customer.getMsisdn());
+                    transData.put("codSistema", "CA");
+                    transDatato.put("codSistema", "AH");
+
+                }
+
 
             }
+
+
             if (fromAccount != null) {
-                if (new BigDecimal(fromAccount.get("saldoCuenta").toString()).intValue() - sub.getAmount().intValue() >= compareValue) {
+                System.out.println("from n'est pas null " + compareValue);
+                if (new BigDecimal(fromAccount.getSaldoCuenta().toString()).intValue() - sub.getAmount().intValue() >= compareValue) {
                     LocalDateTime now = LocalDateTime.now().minusHours(1);
                     transData.put("origine", customer.getMsisdn());
-                    transData.put("codCuenta", fromAccount.get("codCuenta"));
+                    transData.put("codCuenta", fromAccount.getCodCuenta());
                     transData.put("refTransQos", ref);
 
                     transData.put("estPrisEnCompte", 0);
@@ -532,7 +552,7 @@ public class ProcessUssd {
                     transData.put("origine", customer.getMsisdn());
                     transData.put("source", "INTERNE");
 
-                    transDatato.put("codCuenta", toAccount.get("codCuenta"));
+                    transDatato.put("codCuenta", toAccount.getCodCuenta());
 //                    transDatato.put("codSistema", "AH");
                     transDatato.put("refTransQos", ref);
                     transDatato.put("fecha", now.toString());
@@ -558,12 +578,14 @@ public class ProcessUssd {
 
                     } catch (Exception e) {
                         log.info("Erreur lors de la transfert " + e);
-                        return endOperation("Un erreur s est produite, réesayer");
+                        return endOperation("Un erreur s'est produite, réesayer");
                     }
-                } else endOperation("Solde insufissant");
+                } else {
+                    return endOperation("Solde insufissant");
+                }
 
             } else {
-                return endOperation("Un erreur s est produite, reesayer");
+                return endOperation("Un erreur s'est produite, reesayer.");
             }
 
 
@@ -572,7 +594,7 @@ public class ProcessUssd {
             activeSessions.remove(sub.getMsisdn());
             return endOperation("Operation annulée avec succes");
         }
-        return endOperation("Un erreur s est produite, reesayer");
+//        return endOperation("Un erreur s est produite, reesayer");
 
     }
 

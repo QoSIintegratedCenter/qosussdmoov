@@ -230,8 +230,8 @@ public class UssdRessource {
                                 .append(sub.getAmount())
                                 .append(" FCFA de votre compte ")
                                 .append(sub.getSubParams().get("option2"))
-                                .append(" sur votre compte Momo.\n")
-                                .append("Frais : 200 FCFA ")
+                                .append(" sur votre compte Momo. ")
+                                .append("Frais: 200 FCFA ")
                                 .append("Total: ").append(sub.getAmount().add(new BigDecimal(200)))
                                 .append(" FCFA");
                         if (sub.getAmount().intValue() < 200) {
@@ -420,7 +420,7 @@ public class UssdRessource {
                                 .append(sub.getSubParams().get("option3"))
                                 .append(" sur votre compte ")
                                 .append(sub.getSubParams().get("option2"))
-                                .append(" ?, frais 200 FCFA, Total : " + sub.getAmount().add(new BigDecimal(200)))
+                                .append(", frais 200 FCFA, Total: " + sub.getAmount().add(new BigDecimal(200)))
                                 .append(" FCFA");
                         return processUssd.momoConfirmOption(text.toString(), sub);
                     }
@@ -496,7 +496,7 @@ public class UssdRessource {
 //                    activeSessions.remove(sub.getMsisdn());
 //                    return processUssd.endDeposit();
                 case 5:
-                    log.info("case 5");
+                    log.info("case 5 " + user_input);
                     sub.incrementMenuLevel();
                     if (sub.getSubParams().get("option1").equals(CREDIT)) {
                         if (sub.getSubParams().get("option2").equals(REMBOURSEMENT)) {
@@ -529,6 +529,7 @@ public class UssdRessource {
 
                     }
                     if (sub.getSubParams().get("option1").equals(TRANSFERT)) {
+                        System.out.println(user_input);
                         return processUssd.transfertProcess(user_input, sub);
                     }
 
