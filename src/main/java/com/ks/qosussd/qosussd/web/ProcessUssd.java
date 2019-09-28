@@ -56,10 +56,11 @@ public class ProcessUssd {
 //        moovUssdResponse.setHomeLink(0);
 //        System.out.println("date  ..... "+ LocalDateTime.now());
         moovUssdResponse.setScreenId(1);
+        moovUssdResponse.setText("Veuillez sélectionner une option :");
+        moovUssdResponse.setScreenType("menu");
+        moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
         if (checkNumberExist(sub.getMsisdn())) {
-            moovUssdResponse.setText("Veuillez sélectionner une option :");
-            moovUssdResponse.setScreenType("menu");
-            moovUssdResponse.setSessionOp(TypeOperation.CONTINUE.getType());
+
             Option option = new Option();
             option.setChoice("1.");
             option.setValue("Dépot");
@@ -88,10 +89,16 @@ public class ProcessUssd {
             moovUssdResponse.setOptions(optionsType);
 
         } else {
-            moovUssdResponse.setText("Désolé ! Vous n’êtes pas enregistré dans la base de données de PADME");
-            moovUssdResponse.setScreenType("form");
-            activeSessions.remove(sub.getMsisdn());
-            moovUssdResponse.setSessionOp(TypeOperation.END.getType());
+            Option option = new Option();
+            option.setChoice("6.");
+            option.setValue("Operation pour tiers");
+            OptionsType optionsType = new OptionsType();
+            optionsType.getOption().add(option);
+            moovUssdResponse.setOptions(optionsType);
+//            moovUssdResponse.setText("Désolé ! Vous n’êtes pas enregistré dans la base de données de PADME");
+//            moovUssdResponse.setScreenType("form");
+//            activeSessions.remove(sub.getMsisdn());
+//            moovUssdResponse.setSessionOp(TypeOperation.END.getType());
         }
 
 
