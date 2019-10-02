@@ -4,9 +4,7 @@ import com.ks.qosussd.qosussd.core.*;
 import com.ks.qosussd.qosussd.domaine.PadmeData;
 import com.ks.qosussd.qosussd.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
+import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.web.client.RestTemplate;
 
@@ -866,7 +864,7 @@ public class ProcessUssd {
                 "Terminal":""
         }
         */
-        data.put("CodSolicitud", "SOL-099-" + randomAlphaNumeric3());
+        data.put("codSolicitud", "SOL-099-" + randomAlphaNumeric3());
 //        data.put("FechaSolicitud", LocalDateTime.now().minusHours(1).toString());
         data.put("MontoSolicitado", sub.getAmount());
         data.put("CodSistema", "AH");
@@ -876,11 +874,15 @@ public class ProcessUssd {
         data.put("Terminal", "MOOV USSD");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "Application/json");
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         log.info("demande credit data: {}", data);
         RestTemplate restTemplate = new RestTemplate();
         try {
-            Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();
-            log.info("demande succes {}", res);
+            HttpEntity<Map<String, String>> request = new HttpEntity<Map<String, String>>(data, httpHeaders);
+
+            ResponseEntity<String> response = restTemplate.postForEntity(getProp("askcredit"), request, String.class);
+//            Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();
+            log.info("demande succes {}", response);
         } catch (Exception e) {
             log.error("Erreor lors du demande de pret" + e);
         }
