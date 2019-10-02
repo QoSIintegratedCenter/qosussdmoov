@@ -482,7 +482,7 @@ public class ProcessUssd {
 
         } else {
             activeSessions.remove(sub.getMsisdn());
-            return endOperation("Solde insufissant.");
+            return endOperation("Solde insufisant.");
         }
 
     }
@@ -585,10 +585,10 @@ public class ProcessUssd {
 
                     } catch (Exception e) {
                         log.info("Erreur lors de la transfert " + e);
-                        return endOperation("Un erreur s'est produite, réesayer");
+                        return endOperation("Un erreur s'est produite, réesayer.");
                     }
                 } else {
-                    return endOperation("Solde insufissant");
+                    return endOperation("Solde insufisant.");
                 }
 
             } else {
