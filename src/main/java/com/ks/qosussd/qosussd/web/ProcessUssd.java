@@ -890,10 +890,12 @@ public class ProcessUssd {
     public MoovUssdResponse soldAllAccount(SubscriberInfo sub) {
 //        Map dataSolodeep = new HashMap();
 //        Map dataSolodecr = new HashMap();
+//        log.info("");
         RestTemplate req = new RestTemplate();
         List<PadmeData> mapList = new ArrayList<>();
         String soldeEpagne = "";
         String soldecourant = "";
+        log.info("check solde");
         try {
             mapList = new ApiConnect().getAccountInfoList(getProp("list_account_client_url") + sub.getMsisdn());
 //            dataSolodeep = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
@@ -911,7 +913,7 @@ public class ProcessUssd {
         }
 
 
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "form", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
+        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "menu", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
         optionsType.addOption(new Option("1.", "Compte epargne à vue : " + soldeEpagne + " FCFA"));
         optionsType.addOption(new Option("2.", "Compte courant : " + soldecourant + " FCFA"));

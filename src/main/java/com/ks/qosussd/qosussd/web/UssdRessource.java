@@ -64,7 +64,7 @@ public class UssdRessource {
             activeSessions.put(msisdn, sub);
             log.info("start USSD");
             moovUssdResponse = processUssd.welcomLevel(sub);
-            log.info("MoovUssdResponse : {}", moovUssdResponse);
+//            log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
         } else if (user_input.equals("00")) {
             sub = activeSessions.get(msisdn);
