@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<moovUssdResponse>
+    <screen_type>menu</screen_type>
+    <text>Please choose</text>
+    <options>
+        <option choice="1">Option 1
+        </option>
+        <option choice="2">Option 2
+        </option>
+    </options>
+    <back_link>1</back_link>
+    <home_link>0</home_link>
+    <session_op>continue</session_op>
+    <screen_id>15</screen_id>
+</moovUssdResponse>
