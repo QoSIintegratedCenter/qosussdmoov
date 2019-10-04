@@ -69,8 +69,8 @@ public class UssdResponse {
     /**
      * @param freeflow the freeflow to set
      */
-    public void setFreeflow(String freeflow) {
-        this.freeflow = new Freeflow(freeflow);
+    public void setFreeflow(Freeflow freeflow) {
+        this.freeflow = freeflow;
     }
 
     @Override

@@ -61,7 +61,7 @@ public class UssdRessource {
             getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
             sub.setMenuLevel(0);
             activeSessions.put(msisdn, sub);
-            log.info("start USSD Version 1.0.1");
+            log.info(LOG_MOOV + "start USSD Version 1.0.3 build by Jacques KOMACLO for QosIC");
             moovUssdResponse = processUssd.welcomLevel(sub);
 //            log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;

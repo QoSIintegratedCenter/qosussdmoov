@@ -21,4 +21,6 @@ public class Constants {
     public static final String COMPTE_TIERS = "comptetiers";
     public static final String SOLDE = "solde";
     public static final String DEPOT_TIERS = "depottiers";
+    public static final String LOG_MOOV = "MOOV USSD ====>";
+    public static final String LOG_MTN = "MOOV USSD ====>";
 }
