@@ -480,7 +480,7 @@ public class ProcessUssd {
 
         } else {
             activeSessions.remove(sub.getMsisdn());
-            return endOperation("Solde insufisant.");
+            return endOperation("Solde insuffisant.");
         }
 
     }
@@ -586,7 +586,7 @@ public class ProcessUssd {
                         return endOperation("Un erreur s'est produite, réesayer.");
                     }
                 } else {
-                    return endOperation("Solde insufisant.");
+                    return endOperation("Solde insuffisant.");
                 }
 
             } else {
