@@ -9,8 +9,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.awt.*;
-
 @RestController
 @RequestMapping("mtn")
 @Slf4j
@@ -25,7 +23,7 @@ public class MtnRessource {
         ussdResponse.setApplicationResponse("Welcome to mtn");
         ussdResponse.setMsisdn(ussdRequest.getMsisdn());
 
-        return new UssdResponse();
+        return ussdResponse;
     }
 
 }

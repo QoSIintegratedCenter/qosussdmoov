@@ -5,32 +5,35 @@
  */
 package com.ks.qosussd.qosussd.soapdto;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
- *
  * @author ptrack
  */
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
+//@XmlRootElement
+//@XmlAccessorType(XmlAccessType.FIELD)
+
+@JacksonXmlRootElement(localName = "freeflow")
 public class Freeflow {
 
 //    
 //    public static final String CONTINUE = "FC";
 //    public static final String BREAK = "FB";
     //<freeflowCharging>N</freeflowCharging><freeflowChargingAmount>0</freeflowChargingAmount>
-    
-    @XmlElement
+
+    //    @XmlElement
+    @JacksonXmlProperty
     private String mode;
-    @XmlElement
-    private String freeflowState="FB";
-    @XmlElement
-    private int freeflowChargingAmount=0;
-    @XmlElement
-    private String freeflowCharging="N";
+    //    @XmlElement
+    @JacksonXmlProperty
+    private String freeflowState = "FB";
+    //    @XmlElement
+    @JacksonXmlProperty
+    private int freeflowChargingAmount = 0;
+    //    @XmlElement
+    @JacksonXmlProperty
+    private String freeflowCharging = "N";
 
     //@XmlElement
     public String getMode() {
@@ -44,13 +47,13 @@ public class Freeflow {
     public Freeflow(String state) {
         this.freeflowState = state;
     }
-    
+
     public Freeflow() {
     }
 
     @Override
     public String toString() {
-        return "Freeflow [" + mode + "|"+ freeflowCharging + "|"+ freeflowChargingAmount + "|"+ freeflowState + "]";
+        return "Freeflow [" + mode + "|" + freeflowCharging + "|" + freeflowChargingAmount + "|" + freeflowState + "]";
     }
 
     /**

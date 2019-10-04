@@ -5,26 +5,31 @@
  */
 package com.ks.qosussd.qosussd.soapdto;
 
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
  *
  * @author ptrack
  */
 
-@XmlRootElement(name = "request")
+//@XmlRootElement(name = "request")
+@JacksonXmlRootElement(localName = "request")
 public class UssdRequest {
-
+    @JacksonXmlProperty
     private String msisdn;
+    @JacksonXmlProperty
     private Freeflow freeflow;
+    @JacksonXmlProperty
     private String type;
+    @JacksonXmlProperty
     private String sessionId;
+    @JacksonXmlProperty
     private String newRequest;
+    @JacksonXmlProperty
     private String subscriberInput;
 
-    @XmlElement
+    //    @XmlElement
     public String getMsisdn() {
         return msisdn;
     }
@@ -33,7 +38,7 @@ public class UssdRequest {
         this.msisdn = msisdn;
     }
 
-    @XmlElement
+    //    @XmlElement
     public Freeflow getFreeflow() {
         return freeflow;
     }
@@ -42,7 +47,7 @@ public class UssdRequest {
         this.freeflow = freeflow;
     }
 
-    @XmlAttribute
+    //    @XmlAttribute
     public String getType() {
         return type;
     }
@@ -68,7 +73,7 @@ public class UssdRequest {
     /**
      * @return the newRequest
      */
-    @XmlElement
+//    @XmlElement
     public String getNewRequest() {
         return newRequest;
     }
@@ -88,7 +93,7 @@ public class UssdRequest {
     /**
      * @return the subscriberInput
      */
-    @XmlElement
+//    @XmlElement
     public String getSubscriberInput() {
         return subscriberInput;
     }

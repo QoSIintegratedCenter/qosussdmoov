@@ -5,22 +5,25 @@
  */
 package com.ks.qosussd.qosussd.soapdto;
 
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
+import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 
 /**
  *
  * @author ptrack
  */
-@XmlRootElement(name = "response")
+//@XmlRootElement(name = "response")
+@JacksonXmlRootElement(localName = "response")
 public class UssdResponse {
 
     //@XmlElement(required = true)
+    @JacksonXmlProperty
     private String msisdn;
     //@XmlElement(required = true)
     private String applicationResponse;
     
     //@XmlElement(required = true)
+    @JacksonXmlProperty
     private Freeflow freeflow;
     
     //private String appDrivenMenuCode;
@@ -28,7 +31,7 @@ public class UssdResponse {
     /**
      * @return the msisdn
      */
-    @XmlElement
+//    @XmlElement
     public String getMsisdn() {
         return msisdn;
     }
@@ -43,7 +46,7 @@ public class UssdResponse {
     /**
      * @return the applicationResponse
      */
-    @XmlElement
+//    @XmlElement
     public String getApplicationResponse() {
         return applicationResponse;
     }
@@ -58,7 +61,7 @@ public class UssdResponse {
     /**
      * @return the freeflow
      */
-    @XmlElement
+//    @XmlElement
     public Freeflow getFreeflow() {
         return freeflow;
     }
