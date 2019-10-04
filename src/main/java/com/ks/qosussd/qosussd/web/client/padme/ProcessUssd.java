@@ -2,7 +2,7 @@ package com.ks.qosussd.qosussd.web.client.padme;
 
 import com.ks.qosussd.qosussd.core.*;
 import com.ks.qosussd.qosussd.domaine.PadmeData;
-import com.ks.qosussd.qosussd.padme.ApiConnect;
+import com.ks.qosussd.qosussd.service.padme.ApiConnect;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
 import org.springframework.scheduling.annotation.Async;

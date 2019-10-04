@@ -1,4 +1,4 @@
-package com.ks.qosussd.qosussd.padme;
+package com.ks.qosussd.qosussd.service.padme;
 
 import com.ks.qosussd.qosussd.core.SubscriberInfo;
 import com.ks.qosussd.qosussd.domaine.PadmeData;
