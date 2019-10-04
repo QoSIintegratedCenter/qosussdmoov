@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import java.io.File;
 import java.math.BigDecimal;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -62,7 +61,7 @@ public class UssdRessource {
             getDefaultSub(sc, user_input, lang, session_id, req_no, screen_id, sub);
             sub.setMenuLevel(0);
             activeSessions.put(msisdn, sub);
-            log.info("start USSD");
+            log.info("start USSD Version 1.0.1");
             moovUssdResponse = processUssd.welcomLevel(sub);
 //            log.info("MoovUssdResponse : {}", moovUssdResponse);
             return moovUssdResponse;
@@ -270,14 +269,13 @@ public class UssdRessource {
                             }
                         }
                         if ((sub.getSubParams().get("option2").equals(DEMANDE_CREDIT))) {
-                            String res = "Nous accusons reception de votre demande de pret. Un agent de PADME vous contactera sous peu. \n" +
-                                    "Nous vous remercions d’avoir utiliser le service push-pull de PADME.";
+
                             sub.setAmount(new BigDecimal(user_input));
                             SubscriberInfo finalSub = sub;
-                            new Thread(() -> processUssd.astkLoan(finalSub)).start();
-                            ;
-                            activeSessions.remove(sub.getMsisdn());
-                            return processUssd.endOperation(res);
+                            return processUssd.askLoan(sub);
+//                            new Thread(() -> processUssd.askLoan(finalSub)).start();
+
+
                         }
 //                        return processUssd.moovLevel1ResumEpargne(sub);
                     }
@@ -304,8 +302,8 @@ public class UssdRessource {
 
 
                     }
-                    if ((sub.getSubParams().get("option1").equals(GESTION_ACCOUNT))) {
-                        if ((sub.getSubParams().get("option2").equals(SOLDE))) {
+                  /*   if ((sub.getSubParams().get("option1").equals(GESTION_ACCOUNT))) {
+                       if ((sub.getSubParams().get("option2").equals(SOLDE))) {
                             select = Integer.parseInt(user_input);
                             Map dataSolode = new HashMap();
                             getAccountSelectOption(sub);
@@ -323,8 +321,8 @@ public class UssdRessource {
                             String text = "Exemplaire de termes et conditions";
                             activeSessions.remove(sub.getMsisdn());
                             return processUssd.endOperation(text);
-                        }
-                    }
+
+                    }}*/
                     if ((sub.getSubParams().get("option1").equals(OPERATION_TIERS))) {
                         if (sub.getSubParams().get("option2").equals(DEPOT_TIERS)) {
                             log.info("tiers phone number {}", user_input);

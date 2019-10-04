@@ -847,9 +847,11 @@ public class ProcessUssd {
         return moovUssdResponse;
     }
 
-    @Async
-    public void astkLoan(SubscriberInfo sub) {
+    //    @Async
+    public MoovUssdResponse askLoan(SubscriberInfo sub) {
         log.info("Demande de credit");
+        String res = "Nous accusons reception de votre demande de pret. Un agent de PADME vous contactera sous peu.";
+//                "Nous vous remercions d’avoir utiliser le service push-pull de PADME.";
         Map data = new HashMap();
         Map fromAccount = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
        /* {
@@ -866,12 +868,13 @@ public class ProcessUssd {
         */
         data.put("codSolicitud", "SOL-099-" + randomAlphaNumeric3());
 //        data.put("FechaSolicitud", LocalDateTime.now().minusHours(1).toString());
-        data.put("MontoSolicitado", sub.getAmount());
-        data.put("CodSistema", "AH");
+        data.put("montoSolicitado", sub.getAmount());
+        data.put("codSistema", "AH");
         data.put("observacion", "Demande de pret");
-        data.put("CodCuenta", fromAccount.get("codCuenta"));
-        data.put("RefTransQos", randomAlphaNumeric());
-        data.put("Terminal", "MOOV USSD");
+        data.put("telefono", sub.getMsisdn());
+        data.put("codCuenta", fromAccount.get("codCuenta"));
+        data.put("refTransQos", randomAlphaNumeric());
+        data.put("terminal", "MOOV USSD");
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.set("Content-type", "Application/json");
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -883,9 +886,14 @@ public class ProcessUssd {
             ResponseEntity<String> response = restTemplate.postForEntity(getProp("askcredit"), request, String.class);
 //            Map res = restTemplate.exchange(getProp("askcredit"), HttpMethod.POST, new HttpEntity<Map>(data, httpHeaders), Map.class).getBody();
             log.info("demande succes {}", response);
+            activeSessions.remove(sub.getMsisdn());
+            return endOperation(res);
         } catch (Exception e) {
             log.error("Erreor lors du demande de pret" + e);
+            activeSessions.remove(sub.getMsisdn());
+            return endOperation("Opération non éffectuée");
         }
+//        return endOperation(res);
 
     }
 
@@ -900,6 +908,7 @@ public class ProcessUssd {
         log.info("check solde");
         try {
             mapList = new ApiConnect().getAccountInfoList(getProp("list_account_client_url") + sub.getMsisdn());
+            log.info("Map solde list {}", mapList);
 //            dataSolodeep = new ApiConnect().getAccountInfo(getProp("epargne_account") + sub.getMsisdn());
 //            dataSolodecr = new ApiConnect().getAccountInfo(getProp("operation_account") + sub.getMsisdn());
         } catch (Exception e) {
@@ -914,16 +923,20 @@ public class ProcessUssd {
             }
         }
 
-
-        MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "menu", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
+        log.info(" solde  epv {} crt {}", soldecourant, soldecourant);
+      /*  MoovUssdResponse moovUssdResponse = getMoovUssdResponse("Solde des Comptes :", "menu", TypeOperation.END.getType(), Integer.parseInt(sub.getScreenId()));
         OptionsType optionsType = new OptionsType();
-        optionsType.addOption(new Option("1.", "Compte epargne à vue : " + soldeEpagne + " FCFA"));
+        optionsType.addOption(new Option("1.", "Compte epargne a vue : " + soldeEpagne + " FCFA"));
         optionsType.addOption(new Option("2.", "Compte courant : " + soldecourant + " FCFA"));
-        moovUssdResponse.setOptions(optionsType);
+        moovUssdResponse.setOptions(optionsType);*/
+        StringBuilder res = new StringBuilder();
+        res.append("Solde des Comptes : \n")
+                .append("1. Compte epargne a vue : " + soldeEpagne + " FCFA \n ")
+                .append("2. Compte courant : " + soldecourant + " FCFA");
 //        String text = "le solde de votre compte " + sub.getSubParams().get("option3") + " est de " + dataSolode.get("saldoCuenta") + " fcfa";
         activeSessions.remove(sub.getMsisdn());
 
-        return moovUssdResponse;
+        return endOperation(res.toString());
 
     }
 }

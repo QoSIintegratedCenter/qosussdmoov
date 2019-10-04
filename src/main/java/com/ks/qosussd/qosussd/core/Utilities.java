@@ -35,7 +35,7 @@ public class Utilities {
     }
 
     public static String randomAlphaNumeric3() {
-        int count = 12;
+        int count = 3;
         StringBuilder builder = new StringBuilder();
         while (count-- != 0) {
             int character = (int) (Math.random() * ALPHA_NUMERIC_STRING.length());
